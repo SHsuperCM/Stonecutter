@@ -5,14 +5,37 @@ package io.shcm.shsupercm.fabric.stonecutter;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.initialization.ProjectDescriptor;
+import org.gradle.api.initialization.Settings;
 
-public class SCGradlePlugin implements Plugin<Project> {
+import java.io.File;
+
+public class SCGradlePlugin implements Plugin<Object> {
     @Override
-    public void apply(Project project) {
-        project.afterEvaluate(this::afterEvaluate);
+    public void apply(Object dest) {
+        if (dest instanceof Settings settings) {
+            settings.getExtensions().create("stonecutter", StonecutterSettingsGradle.class, settings);
+        } else if (dest instanceof Project project) {
+            new String();
+        }
     }
 
-    private void afterEvaluate(Project project) {
-        
+    public static class StonecutterSettingsGradle {
+        private final Settings settings;
+
+        public StonecutterSettingsGradle(Settings settings) {
+            this.settings = settings;
+        }
+
+        public void versioned(ProjectDescriptor project, String... versions) {
+            for (String version : versions) {
+                String path = project.getPath() + ":" + version;
+                settings.include(path);
+                ProjectDescriptor versionedProject = settings.project(path);
+                versionedProject.setProjectDir(new File(project.getProjectDir(), "/versions/" + version));
+                versionedProject.setBuildFileName("../../build.gradle");
+                versionedProject.setName(project.getName() + "(" + version + ")");
+            }
+        }
     }
 }
