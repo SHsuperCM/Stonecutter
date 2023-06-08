@@ -1,5 +1,4 @@
 plugins {
-	id 'io.shcm.shsupercm.fabric.stonecutter'
 	id 'fabric-loom' version '1.2-SNAPSHOT'
 	id 'maven-publish'
 }
