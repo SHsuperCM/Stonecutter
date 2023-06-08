@@ -16,7 +16,7 @@ gradlePlugin {
     plugins {
         stonecutter {
             id = 'io.shcm.shsupercm.fabric.stonecutter'
-            implementationClass = 'io.shcm.shsupercm.fabric.stonecutter.SCGradlePlugin'
+            implementationClass = 'io.shcm.shsupercm.fabric.stonecutter.StonecutterPluginSplitter'
         }
     }
 }
