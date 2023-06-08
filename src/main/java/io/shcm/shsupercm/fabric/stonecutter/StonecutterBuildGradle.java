@@ -1,6 +1,8 @@
 package io.shcm.shsupercm.fabric.stonecutter;
 
 import org.gradle.api.Project;
+import org.gradle.api.tasks.SourceSet;
+import org.gradle.api.tasks.SourceSetContainer;
 
 public class StonecutterBuildGradle {
     private final Project project;
@@ -10,6 +12,17 @@ public class StonecutterBuildGradle {
     public StonecutterBuildGradle(Project project) {
         this.project = project;
         this.data = project.getExtensions().create("stonecutterVersion", VersionData.class, this);
+        this.project.afterEvaluate(this::afterEvaluate);
+    }
+
+    private void afterEvaluate(Project project) {
+        if (this.data.isActiveVersion()) {
+            //noinspection ConstantConditions
+            for (SourceSet sourceSet : ((SourceSetContainer) project.property("sourceSets"))) {
+                sourceSet.getJava().srcDir("../../src/" + sourceSet.getName() + "/java");
+                sourceSet.getResources().srcDir("../../src/" + sourceSet.getName() + "/resources");
+            }
+        }
     }
 
     public void apply(StonecutterControllerGradle.StonecutterSetup stonecutterSetup) {
