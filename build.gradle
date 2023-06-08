@@ -1,0 +1,41 @@
+plugins {
+    id 'java-gradle-plugin'
+    id 'com.gradle.plugin-publish' version "0.20.0"
+}
+
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
+version = '0.1'
+group = 'io.shcm.shsupercm.fabric'
+
+gradlePlugin {
+    // Define the plugin
+    plugins {
+        stonecutter {
+            id = 'io.shcm.shsupercm.fabric.stonecutter'
+            implementationClass = 'io.shcm.shsupercm.fabric.stonecutter.SCGradlePlugin'
+        }
+    }
+}
+javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+
+dependencies {
+    
+}
+
+pluginBundle {
+    website = 'https://github.com/SHsuperCM/Stonecutter'
+    vcsUrl = 'https://github.com/SHsuperCM/Stonecutter'
+
+    description = ''
+
+    plugins {
+        stonecutter {
+            displayName = "Stonecutter"
+            tags = ['fabric', 'fabricmc']
+        }
+    }
+}
