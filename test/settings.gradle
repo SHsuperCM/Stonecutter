@@ -1,0 +1,20 @@
+pluginManagement {
+	repositories {
+		maven {
+			name = 'Fabric'
+			url = 'https://maven.fabricmc.net/'
+		}
+		mavenCentral()
+		gradlePluginPortal()
+	}
+	includeBuild '../'
+}
+
+include ':unrelatedsubmod'
+
+
+final String[] versions = new String[]{ "1.20", "1.19.4", "1.19.2", "1.18.2" }
+
+include ':submod'
+for (String version : versions)
+	include ':submod:' + version
