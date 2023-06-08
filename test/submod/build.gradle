@@ -18,6 +18,9 @@ repositories {
 	// for more information about repositories.
 }
 
+System.out.println("[SC] Version: " + stonecutterVersion.version())
+System.out.println("[SC] Is active: " + stonecutterVersion.isActiveVersion())
+
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"

@@ -15,9 +15,9 @@ public class StonecutterPluginSplitter implements Plugin<Object> {
             settings.getExtensions().create("stonecutter", StonecutterSettingsGradle.class, settings);
         } else if (dest instanceof Project project)
             if (project.getBuildFile().getName().equals("stonecutter.gradle")) {
-                StonecutterControllerGradle.apply(project);
+                new StonecutterControllerGradle(project);
             } else {
-                StonecutterBuildGradle.apply(project);
+                new StonecutterBuildGradle(project);
             }
     }
 }
