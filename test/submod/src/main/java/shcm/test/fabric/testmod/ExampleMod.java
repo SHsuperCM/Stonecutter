@@ -2,8 +2,16 @@ package shcm.test.fabric.testmod;
 
 import net.fabricmc.api.ModInitializer;
 
+import net.minecraft.item.Item;
+import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+//? >=1.19.4 {
+import net.minecraft.registry.Registries;
+/*?}*//*? else {
+import net.minecraft.util.registry.Registry;
+//?}*/
 
 public class ExampleMod implements ModInitializer {
 	// This logger is used to write text to the console and the log file.
@@ -18,5 +26,22 @@ public class ExampleMod implements ModInitializer {
 		// Proceed with mild caution.
 
 		LOGGER.info("Hello Fabric world!");
+
+		Item item;
+
+		//? >=1.19.4 {
+		item = Registries.ITEM.get(new Identifier("minecraft:flint"));
+		/*?}*//*? else {
+		item = Registry.ITEM.get(new Identifier("minecraft:flint"));
+		//?}*/
+
+
+		//? >=1.19.4 {
+		item = Registries.ITEM.get(new Identifier("minecraft:flint"));
+		/*?}*//*? ~1.19.3 {
+		item = Registries.ITEM.get(new Identifier("minecraft:flint"));
+		/*?}*//*? else {
+		item = Registry.ITEM.get(new Identifier("minecraft:flint"));
+		//?}*/
 	}
 }
