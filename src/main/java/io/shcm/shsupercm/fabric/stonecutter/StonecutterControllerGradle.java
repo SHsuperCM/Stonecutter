@@ -14,6 +14,10 @@ public class StonecutterControllerGradle {
                 Project versionProject = project.project(project.getPath() + ":" + version);
                 versionProject.getPluginManager().apply(StonecutterPluginSplitter.class);;
                 versionProject.getExtensions().getByType(StonecutterBuildGradle.VersionData.class).apply(settings);
+                project.getTasks().create("Set active version to " + version, task -> {
+                    task.setGroup("stonecutter versions");
+                    task.dependsOn(versionProject.getPath() + ":stonecutterSetActiveVersion");
+                });
             }
         });
     }
@@ -42,8 +46,12 @@ public class StonecutterControllerGradle {
             return Set.of(this.versions);
         }
 
-        public String activeVersion() {
+        public String activeVersionString() {
             return this.current;
+        }
+
+        public StonecutterBuildGradle.VersionData activeVersion(Project controllerProject) {
+            return controllerProject.project(controllerProject.getPath() + ":" + activeVersionString()).getExtensions().getByType(StonecutterBuildGradle.VersionData.class);
         }
     }
 }
