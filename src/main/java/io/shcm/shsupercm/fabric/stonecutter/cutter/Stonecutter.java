@@ -3,11 +3,11 @@ package io.shcm.shsupercm.fabric.stonecutter.cutter;
 import io.shcm.shsupercm.fabric.stonecutter.StonecutterBuildGradle;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
-import org.gradle.internal.impldep.com.google.common.base.Charsets;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -40,6 +40,7 @@ public class Stonecutter {
             transformSourceSet(new File(controllerProject.getProjectDir(), "src"));
         } catch (Exception exception) {
             task.getLogger().error("Errored executing stonecutter processor!");
+            exception.printStackTrace();
             throw new RuntimeException(exception);
         }
     }
@@ -56,7 +57,7 @@ public class Stonecutter {
 
         if (file.isDirectory()) {
             for (File subFile : Objects.requireNonNull(file.listFiles()))
-                transformSourceSet(file);
+                transformSourceSet(subFile);
 
             return;
         }
@@ -72,9 +73,5 @@ public class Stonecutter {
             e.printStackTrace();
             return false;
         }
-    }
-
-    public Charset charset() {
-        return Charsets.UTF_8;
     }
 }

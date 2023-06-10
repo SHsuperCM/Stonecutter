@@ -2,6 +2,8 @@ package io.shcm.shsupercm.fabric.stonecutter.cutter;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 public class FileCutter {
@@ -20,7 +22,7 @@ public class FileCutter {
 
     public void apply() throws Exception {
         newContents = new StringBuilder();
-        try (BufferedReader oldContents = this.oldContents = Files.newBufferedReader(file.toPath(), stonecutter.charset())) {
+        try (BufferedReader oldContents = this.oldContents = Files.newBufferedReader(file.toPath(), StandardCharsets.ISO_8859_1)) {
             while (find("/*?")) {
                 String expression = read("?*/");
                 if (expression == null)
@@ -41,7 +43,7 @@ public class FileCutter {
                     if (expression.startsWith("else")) { // if not previous condition
                         expression = expression.substring(4).stripLeading();
 
-                        els = true;
+                        els = true;//todo fix wrong behavior with multiple else statements
                     } else if (expression.startsWith("{"))
                         throw new StonecutterSyntaxException("Unexpected { opening versioned code without a condition");
 
@@ -63,15 +65,29 @@ public class FileCutter {
             }
         }
 
+        new String();
+
         //todo write new contents to file
     }
 
-    private String read(String match) {
-        //todo implement
-        throw new java.lang.UnsupportedOperationException();
+    private String read(String match) throws IOException {
+        StringBuilder substring = new StringBuilder();
+
+        int current;
+
+        while ((current = oldContents.read()) != -1) {
+            char ch = (char) current;
+            substring.append(ch);
+            newContents.append(ch);
+
+            if (substring.toString().endsWith(match))
+                return substring.substring(0, substring.length() - match.length());
+        }
+
+        return null;
     }
 
-    private boolean find(String match) {
+    private boolean find(String match) throws IOException {
         return read(match) != null;
     }
 }
