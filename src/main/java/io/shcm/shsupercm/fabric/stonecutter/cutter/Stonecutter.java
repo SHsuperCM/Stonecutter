@@ -3,8 +3,11 @@ package io.shcm.shsupercm.fabric.stonecutter.cutter;
 import io.shcm.shsupercm.fabric.stonecutter.StonecutterBuildGradle;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.internal.impldep.com.google.common.base.Charsets;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -33,10 +36,32 @@ public class Stonecutter {
 
             this.fabricLoaderAPI = FabricLoaderAPI.fromDependencies(controllerProject.project(toVersion.version()));
             this.targetSemVersion = this.fabricLoaderAPI.parseVersion(toVersion.version());
+
+            transformSourceSet(new File(controllerProject.getProjectDir(), "src"));
         } catch (Exception exception) {
             task.getLogger().error("Errored executing stonecutter processor!");
             throw new RuntimeException(exception);
         }
+    }
+
+    private void switchSourceSet() throws IOException {
+        List<String> stonecutterGradleLines = new ArrayList<>(Files.readAllLines(controllerProject.getBuildFile().toPath()));
+        stonecutterGradleLines.set(5, "stonecutter.current('" + toVersion.version() + "')");
+        Files.write(controllerProject.getBuildFile().toPath(), stonecutterGradleLines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+    }
+
+    private void transformSourceSet(File file) throws Exception {
+        if (file == null || !file.exists())
+            return;
+
+        if (file.isDirectory()) {
+            for (File subFile : Objects.requireNonNull(file.listFiles()))
+                transformSourceSet(file);
+
+            return;
+        }
+
+        new FileCutter(file, this).apply();
     }
 
     public boolean testVersion(String predicate) {
@@ -49,9 +74,7 @@ public class Stonecutter {
         }
     }
 
-    public void switchSourceSet() throws IOException {
-        List<String> stonecutterGradleLines = new ArrayList<>(Files.readAllLines(controllerProject.getBuildFile().toPath()));
-        stonecutterGradleLines.set(5, "stonecutter.current('" + toVersion.version() + "')");
-        Files.write(controllerProject.getBuildFile().toPath(), stonecutterGradleLines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+    public Charset charset() {
+        return Charsets.UTF_8;
     }
 }
