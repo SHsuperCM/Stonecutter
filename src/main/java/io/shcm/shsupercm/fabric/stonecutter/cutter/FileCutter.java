@@ -24,7 +24,8 @@ public class FileCutter {
             transformedContents = applyVersionedCodeComments(oldContents, new StringBuilder());
         }
 
-        Files.writeString(file.toPath(), transformedContents, StandardCharsets.ISO_8859_1, StandardOpenOption.TRUNCATE_EXISTING);
+        file.delete();
+        Files.writeString(file.toPath(), transformedContents, StandardCharsets.ISO_8859_1, StandardOpenOption.CREATE);
     }
 
     private StringBuilder applyVersionedCodeComments(Reader input, StringBuilder output) throws StonecutterSyntaxException, IOException {
