@@ -60,7 +60,13 @@ public class FileCutter {
                         conditions.push(conditionResult);
                     }
 
-                    //todo append enable/disable code part
+                    // skip 2 only if "/*" is next
+                    oldContents.mark(2);
+                    if (oldContents.read() != '/' || oldContents.read() != '*')
+                        oldContents.reset();
+
+                    if (conditions.peek() == null || !conditions.peek())
+                        newContents.append("/*");
                 }
             }
         }
