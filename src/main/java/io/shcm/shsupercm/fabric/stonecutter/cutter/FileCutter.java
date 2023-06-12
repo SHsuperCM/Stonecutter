@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Deque;
+import java.util.LinkedList;
 
 public class FileCutter {
     private final File file;
@@ -18,54 +20,50 @@ public class FileCutter {
     private BufferedReader oldContents;
     private StringBuilder newContents;
 
-    private boolean versionedCode = false, disabledCode = false;
-
     public void apply() throws Exception {
         newContents = new StringBuilder();
         try (BufferedReader oldContents = this.oldContents = Files.newBufferedReader(file.toPath(), StandardCharsets.ISO_8859_1)) {
+            Deque<Boolean> conditions = new LinkedList<>();
             while (find("/*?")) {
                 String expression = read("?*/");
                 if (expression == null)
-                    throw new StonecutterSyntaxException("Expected ?*/");
+                    throw new StonecutterSyntaxException("Expected ?*/ to close stonecutter expression");
                 expression = expression.trim();
 
-                if (expression.startsWith("}")) { // closing versioned code
-                    if (!versionedCode)
-                        throw new StonecutterSyntaxException("Unexpected } closing non-versioned code");
+                Boolean closedState = null;
+                final boolean skip;
 
-                    versionedCode = false;
+                if (expression.startsWith("}")) {
+                    if (conditions.isEmpty())
+                        throw new StonecutterSyntaxException("Unexpected } symbol");
+
+                    skip = (closedState = conditions.pop()) == null;
                     expression = expression.substring(1).stripLeading();
-                } else if (expression.startsWith("{"))
-                    throw new StonecutterSyntaxException("Unexpected { opening versioned code without a condition");
+                } else
+                    skip = false;
 
                 if (!expression.isBlank()) {
-                    boolean els = false;
-                    if (expression.startsWith("else")) { // if not previous condition
-                        expression = expression.substring(4).stripLeading();
-
-                        els = true;//todo fix wrong behavior with multiple else statements
-                    } else if (expression.startsWith("{"))
-                        throw new StonecutterSyntaxException("Unexpected { opening versioned code without a condition");
-
-                    if (expression.endsWith("{")) {
-                        versionedCode = true;
+                    if (expression.endsWith("{"))
                         expression = expression.substring(0, expression.length() - 1).stripTrailing();
-                    }
+                    else
+                        throw new StonecutterSyntaxException("Expected { symbol");
 
-                    if (expression.isBlank()) {
-                        if (els)
-                            disabledCode = !disabledCode;
-                        else
-                            throw new StonecutterSyntaxException("Unexpected { opening versioned code without a condition");
-                    } else
-                        disabledCode = (els && !disabledCode) || !stonecutter.testVersion(expression);
+                    if ((closedState != null && closedState) || ((skip || !conditions.isEmpty()) && (conditions.peek() == null || !conditions.peek()))) {
+                        conditions.push(null);
+                    } else {
+                        boolean conditionResult = true;
+                        if (expression.startsWith("else"))
+                            expression = expression.substring(4).stripLeading();
+                        if (!expression.isBlank())
+                            conditionResult = stonecutter.testVersion(expression);
+
+                        conditions.push(conditionResult);
+                    }
 
                     //todo append enable/disable code part
                 }
             }
         }
-
-        new String();
 
         //todo write new contents to file
     }
