@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.Deque;
 import java.util.LinkedList;
 
@@ -23,7 +24,7 @@ public class FileCutter {
             transformedContents = applyVersionedCodeComments(oldContents, new StringBuilder());
         }
 
-        //todo write new contents to file
+        Files.writeString(file.toPath(), transformedContents, StandardCharsets.ISO_8859_1, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
     private StringBuilder applyVersionedCodeComments(Reader input, StringBuilder output) throws StonecutterSyntaxException, IOException {
