@@ -1,0 +1,27 @@
+<idea-plugin>
+    <id>io.shcm.shsupercm.fabric.stonecutter</id>
+    <name>Stonecutter</name>
+    <vendor url="https://www.github.com/SHsuperCM/Stonecutter">Stonecutter (SHsuperCM)</vendor>
+
+    <description>Intellij Idea integration for Stonecutter projects</description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.java</depends>
+    <depends>org.jetbrains.plugins.gradle</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <localInspection language="JAVA"
+                         bundle="Lang"
+                         key="inspection.stonecutter.close_expression.display.name"
+                         groupPath="Java"
+                         groupBundle="Lang"
+                         groupKey="inspection.stonecutter.group"
+                         enabledByDefault="true"
+                         level="ERROR"
+                         implementationClass="io.shcm.shsupercm.fabric.stonecutter.idea.UnclosedInspection"/>
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+    </actions>
+</idea-plugin>

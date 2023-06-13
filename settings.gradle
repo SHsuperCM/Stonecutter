@@ -5,3 +5,6 @@ pluginManagement {
 }
 
 rootProject.name = 'Stonecutter'
+
+include 'idea-integration'
+project(':idea-integration').buildFileName = '../idea-integration.gradle'

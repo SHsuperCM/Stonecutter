@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij' version '1.14.1'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+}
+
+intellij {
+    version = '2021.1.2'
+    plugins = [ 'com.intellij.java', 'org.jetbrains.plugins.gradle' ]
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir '../src/idea-integration/java'
+        }
+        resources {
+            srcDir '../src/idea-integration/resources'
+        }
+    }
+}
