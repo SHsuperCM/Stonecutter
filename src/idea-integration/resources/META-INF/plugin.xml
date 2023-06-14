@@ -19,6 +19,8 @@
                          enabledByDefault="true"
                          level="ERROR"
                          implementationClass="io.shcm.shsupercm.fabric.stonecutter.idea.UnclosedInspection"/>
+
+        <lang.foldingBuilder language="JAVA" implementationClass="io.shcm.shsupercm.fabric.stonecutter.idea.CutterFolding"/>
     </extensions>
 
     <actions>

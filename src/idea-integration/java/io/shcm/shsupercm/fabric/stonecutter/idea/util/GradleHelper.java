@@ -5,6 +5,7 @@ import com.intellij.openapi.externalSystem.service.project.ProjectDataManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.plugins.gradle.model.ExternalProject;
 import org.jetbrains.plugins.gradle.model.ExternalSourceSet;
@@ -16,7 +17,11 @@ import java.util.Objects;
 
 public final class GradleHelper { private GradleHelper() {}
     public static boolean isStonecutter(PsiFile file) {
-        return getStonecutterGradle(getGradle(file), file.getProject()) != null;
+        return isStonecutter(file.getVirtualFile(), file.getProject());
+    }
+
+    public static boolean isStonecutter(VirtualFile file, Project project) {
+        return getStonecutterGradle(getGradle(file, project), project) != null;
     }
 
     public static ExternalProject getStonecutterGradle(ExternalProject gradleProject, Project ideaProject) {
@@ -24,17 +29,18 @@ public final class GradleHelper { private GradleHelper() {}
             return gradleProject;
 
         File versions = gradleProject.getProjectDir().getParentFile();
-        if (versions.getName().equals("versions")) {
-            File root = versions.getParentFile();
-            if (new File(root, "stonecutter.gradle").exists())
-                return getGradle(ideaProject, root.getAbsolutePath());
-        }
+        if (versions.getName().equals("versions"))
+            return getStonecutterGradle(parent(gradleProject, ideaProject), ideaProject);
 
         return null;
     }
 
     public static ExternalProject getGradle(PsiFile file) {
-        return getGradle(ProjectRootManager.getInstance(file.getProject()).getFileIndex().getModuleForFile(file.getVirtualFile()));
+        return getGradle(file.getVirtualFile(), file.getProject());
+    }
+
+    public static ExternalProject getGradle(VirtualFile file, Project project) {
+        return getGradle(ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(file));
     }
 
     public static ExternalProject getGradle(Module module) {
@@ -65,6 +71,32 @@ public final class GradleHelper { private GradleHelper() {}
             ExternalProject sourceSetProject = findWithSourceSet(subProject, sourceSet);
             if (sourceSetProject != null)
                 return sourceSetProject;
+        }
+
+        return null;
+    }
+
+    public static ExternalProject parent(ExternalProject gradleProject, Project ideaProject) {
+        for (ExternalProjectInfo projectInfo : ProjectDataManager.getInstance().getExternalProjectsData(ideaProject, GradleConstants.SYSTEM_ID)) {
+            ExternalProject root = ExternalProjectDataCache.getInstance(ideaProject).getRootExternalProject(projectInfo.getExternalProjectPath());
+            if (root == null)
+                continue;
+            ExternalProject parent = parent(root, gradleProject);
+            if (parent != null)
+                return parent;
+        }
+
+        return null;
+    }
+
+    public static ExternalProject parent(ExternalProject root, ExternalProject child) {
+        if (root.getChildProjects().containsValue(child))
+            return root;
+
+        for (ExternalProject subRoot : root.getChildProjects().values()) {
+            ExternalProject parent = parent(subRoot, child);
+            if (parent != null)
+                return parent;
         }
 
         return null;
