@@ -11,50 +11,28 @@ import java.util.LinkedList;
 
 public class FileCutter {
     private final File file;
-    private final Stonecutter stonecutter;
+    private final StonecutterTask stonecutter;
 
-    public FileCutter(File file, Stonecutter stonecutter) {
+    public FileCutter(File file, StonecutterTask stonecutter) {
         this.file = file;
         this.stonecutter = stonecutter;
     }
 
-    public void apply() throws Exception {
-        StringBuilder transformedContents;
+    public void write(File outputFile) throws Exception {
+        StringBuilder transformedContents = new StringBuilder();
+
         try (Reader oldContents = Files.newBufferedReader(file.toPath(), StandardCharsets.ISO_8859_1)) {
-            transformedContents = applyVersionedCodeComments(oldContents, new StringBuilder());
+            applyVersionedCodeComments(oldContents, transformedContents);
         }
 
-        file.delete();
-        Files.writeString(file.toPath(), transformedContents, StandardCharsets.ISO_8859_1, StandardOpenOption.CREATE);
+        outputFile.delete();
+        Files.writeString(outputFile.toPath(), transformedContents, StandardCharsets.ISO_8859_1, StandardOpenOption.CREATE);
     }
 
-    private StringBuilder applyVersionedCodeComments(Reader input, StringBuilder output) throws StonecutterSyntaxException, IOException {
-        class Helper {
-            private String read(String match) throws IOException {
-                StringBuilder substring = new StringBuilder();
-
-                int current;
-
-                while ((current = input.read()) != -1) {
-                    char ch = (char) current;
-                    substring.append(ch);
-                    output.append(ch);
-
-                    if (substring.toString().endsWith(match))
-                        return substring.substring(0, substring.length() - match.length());
-                }
-
-                return null;
-            }
-
-            private boolean find(String match) throws IOException {
-                return read(match) != null;
-            }
-        } Helper helper = new Helper();
-
+    private void applyVersionedCodeComments(Reader input, StringBuilder output) throws StonecutterSyntaxException, IOException {
         Deque<Boolean> conditions = new LinkedList<>();
-        while (helper.find("/*?")) {
-            String expression = helper.read("?*/");
+        while (read("/*?", input, output) != null) {
+            String expression = read("?*/", input, output);
             if (expression == null)
                 throw new StonecutterSyntaxException("Expected ?*/ to close stonecutter expression");
             expression = expression.trim();
@@ -98,7 +76,22 @@ public class FileCutter {
                     output.append("/*");
             }
         }
+    }
 
-        return output;
+    private static String read(String match, Reader input, StringBuilder output) throws IOException {
+        StringBuilder substring = new StringBuilder();
+
+        int current;
+
+        while ((current = input.read()) != -1) {
+            char ch = (char) current;
+            substring.append(ch);
+            output.append(ch);
+
+            if (substring.toString().endsWith(match))
+                return substring.substring(0, substring.length() - match.length());
+        }
+
+        return null;
     }
 }

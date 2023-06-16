@@ -1,6 +1,5 @@
 package io.shcm.shsupercm.fabric.stonecutter;
 
-import io.shcm.shsupercm.fabric.stonecutter.cutter.Stonecutter;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
@@ -15,10 +14,6 @@ public class StonecutterBuildGradle {
     public StonecutterBuildGradle(Project project) {
         this.project = project;
         this.data = project.getExtensions().create("stonecutterVersion", VersionData.class, this);
-
-        project.getTasks().create("stonecutterSetActiveVersion", taskCreate ->
-            taskCreate.doFirst(task ->
-                    new Stonecutter(Objects.requireNonNull(this.project.getParent()), stonecutterSetup.activeVersion(this.project.getParent()), data).run(task)));
 
         project.afterEvaluate(this::afterEvaluate);
     }
