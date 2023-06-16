@@ -8,11 +8,12 @@ import java.util.Objects;
 
 public class StonecutterBuildGradle {
     private final Project project;
+    private final StonecutterProjectSetups.Setup setup;
     private final VersionData data;
-    private StonecutterControllerGradle.StonecutterSetup stonecutterSetup;
 
     public StonecutterBuildGradle(Project project) {
         this.project = project;
+        this.setup = project.getGradle().getExtensions().getByType(StonecutterProjectSetups.class).get(Objects.requireNonNull(project.getParent()));
         this.data = project.getExtensions().create("stonecutterVersion", VersionData.class, this);
 
         project.afterEvaluate(this::afterEvaluate);
@@ -27,10 +28,6 @@ public class StonecutterBuildGradle {
         }
     }
 
-    public void apply(StonecutterControllerGradle.StonecutterSetup stonecutterSetup) {
-        this.stonecutterSetup = stonecutterSetup;
-    }
-
     public static class VersionData {
         private final StonecutterBuildGradle plugin;
         private final String version;
@@ -40,16 +37,12 @@ public class StonecutterBuildGradle {
             this.version = plugin.project.getName();
         }
 
-        void apply(StonecutterControllerGradle.StonecutterSetup stonecutterSetup) {
-            plugin.apply(stonecutterSetup);
-        }
-
         public String version() {
             return this.version;
         }
 
         public boolean isActiveVersion() {
-            return this.version.equals(plugin.stonecutterSetup.activeVersionString());
+            return this.version.equals(plugin.setup.current());
         }
     }
 }
