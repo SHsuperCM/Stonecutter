@@ -16,4 +16,6 @@ plugins {
 
 include ':unrelatedsubmod', ':submod'
 
-stonecutter.versioned(project(':submod'), "1.20", "1.19.4", "1.19.2", "1.18.2")
+stonecutter.create(project(':submod')) {
+	versions '1.20', '1.19.4', '1.19.2', '1.18.2'
+}
