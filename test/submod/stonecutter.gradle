@@ -1,3 +1,9 @@
 plugins.apply 'io.shcm.shsupercm.fabric.stonecutter'
 stonecutterSetup.active '1.20'
 //-------- !DO NOT EDIT ABOVE THIS LINE! --------\\
+
+stonecutterSetup.registerChiseled tasks.register("chiseledBuild", stonecutterSetup.chiseled) {
+    setGroup "project"
+
+    ofTask "build"
+}

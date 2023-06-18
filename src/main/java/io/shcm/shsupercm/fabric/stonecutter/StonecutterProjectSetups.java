@@ -2,9 +2,7 @@ package io.shcm.shsupercm.fabric.stonecutter;
 
 import org.gradle.api.Project;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class StonecutterProjectSetups {
     private final Map<String, Setup> controllerSetups = new HashMap<>();
@@ -20,6 +18,7 @@ public class StonecutterProjectSetups {
     public static class Setup {
         private final String[] versions;
         private String current;
+        private final Set<String> chiseledTasks = new HashSet<>();
 
         private Setup(String[] versions) {
             this.versions = versions;
@@ -37,6 +36,18 @@ public class StonecutterProjectSetups {
             if (!versions().contains(version))
                 throw new IllegalArgumentException("Version not registered for project");
             this.current = version;
+        }
+
+        public void registerChiseled(String taskName) {
+            this.chiseledTasks.add(taskName);
+        }
+
+        public boolean isChiseled(Iterable<String> taskNames) {
+            for (String taskName : taskNames)
+                if (chiseledTasks.contains(taskName))
+                    return true;
+
+            return false;
         }
     }
 }

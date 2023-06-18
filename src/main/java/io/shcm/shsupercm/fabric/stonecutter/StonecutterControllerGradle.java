@@ -2,6 +2,7 @@ package io.shcm.shsupercm.fabric.stonecutter;
 
 import io.shcm.shsupercm.fabric.stonecutter.cutter.StonecutterTask;
 import org.gradle.api.Project;
+import org.gradle.api.tasks.TaskProvider;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +20,11 @@ public class StonecutterControllerGradle {
 
         for (String version : setup.versions())
             project.project(version).getPluginManager().apply(StonecutterPluginSplitter.class);
+
+        project.getTasks().create("chiseledStonecutter", task -> {
+            for (String version : setup.versions())
+                task.dependsOn(version + ":setupChiseledStonecutterBuild");
+        });
 
         project.afterEvaluate(afterEvaluate -> {
             StonecutterBuildGradle.VersionData currentVersionData = afterEvaluate.project(setup.current()).getExtensions().getByType(StonecutterBuildGradle.VersionData.class);
@@ -52,6 +58,7 @@ public class StonecutterControllerGradle {
 
     public static class ControllerExt {
         private final StonecutterProjectSetups.Setup setup;
+        public final Class<ChiseledTask> chiseled = ChiseledTask.class;
 
         public ControllerExt(StonecutterProjectSetups.Setup setup) {
             this.setup = setup;
@@ -59,6 +66,14 @@ public class StonecutterControllerGradle {
 
         public void active(String current) {
             setup.setCurrent(current);
+        }
+
+        public Iterable<String> versions() {
+            return setup.versions();
+        }
+
+        public void registerChiseled(TaskProvider<?> registeredTask) {
+            setup.registerChiseled(registeredTask.getName());
         }
     }
 }
