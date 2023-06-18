@@ -26,7 +26,7 @@ public abstract class StonecutterTask extends DefaultTask {
             throw new IllegalArgumentException();
 
         try {
-            this.fabricLoaderAPI = FabricLoaderAPI.fromDependencies(getProject().project(getToVersion().get().version()));
+            this.fabricLoaderAPI = FabricLoaderAPI.fromDependencies(getToVersion().get().project());
             this.targetSemVersion = this.fabricLoaderAPI.parseVersion(getToVersion().get().version());
         } catch (Exception e) {
             e.printStackTrace();
@@ -51,7 +51,7 @@ public abstract class StonecutterTask extends DefaultTask {
         else if (getFileFilter().get().test(file)) {
             File output = file;
             if (!inputRoot.equals(outputRoot)) {
-                output = outputRoot.toPath().resolve(output.toPath().relativize(inputRoot.toPath())).toFile();
+                output = outputRoot.toPath().resolve(inputRoot.toPath().relativize(output.toPath())).toFile();
                 output.getParentFile().mkdirs();
             }
             new FileCutter(file, this).write(output);
