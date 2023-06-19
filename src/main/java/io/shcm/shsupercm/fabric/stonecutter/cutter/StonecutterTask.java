@@ -20,6 +20,8 @@ public abstract class StonecutterTask extends DefaultTask {
     private FabricLoaderAPI fabricLoaderAPI = null;
     private Object targetSemVersion;
 
+    private StoneRegexTokenizer remapTokenizer = null;
+
     @TaskAction
     public void run() {
         if (!getInputDir().isPresent() || !getOutputDir().isPresent() || !getFromVersion().isPresent() || !getToVersion().isPresent())
@@ -31,6 +33,19 @@ public abstract class StonecutterTask extends DefaultTask {
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Could not get fabric loader api from dependencies!", e);
+        }
+
+        try {
+            StoneRegexTokenizer sourceTokenizer = getFromVersion().get().tokenizer();
+            StoneRegexTokenizer targetTokenizer = getToVersion().get().tokenizer();
+
+            if (!targetTokenizer.tokens().containsAll(sourceTokenizer.tokens()))
+                throw new IllegalStateException("Target token set not complete");
+
+            this.remapTokenizer = StoneRegexTokenizer.remap(sourceTokenizer, targetTokenizer);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Could not load tokenizer!", e);
         }
 
         try {
@@ -66,5 +81,9 @@ public abstract class StonecutterTask extends DefaultTask {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public StoneRegexTokenizer tokenRemapper() {
+        return this.remapTokenizer;
     }
 }

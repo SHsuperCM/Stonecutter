@@ -22,7 +22,7 @@ public class StonecutterSettingsGradle {
     public void create(ProjectDescriptor project, Action<StonecutterProjectBuilder> stonecutterProjectBuilder) {
         StonecutterProjectBuilder builder = new StonecutterProjectBuilder(stonecutterProjectBuilder);
 
-        if (!stonecutterProjects.registerVersioned(project.getPath(), builder.versions))
+        if (!stonecutterProjects.registerVersioned(project.getPath(), builder))
             throw new IllegalArgumentException("Project already registered as a stonecutter project");
 
         try {
@@ -50,7 +50,8 @@ public class StonecutterSettingsGradle {
     }
 
     public static class StonecutterProjectBuilder {
-        private String[] versions;
+        protected String[] versions;
+        protected String tokensFile = "./tokens.gradle";
 
         private StonecutterProjectBuilder(Action<StonecutterProjectBuilder> builder) {
             builder.execute(this);
@@ -61,6 +62,10 @@ public class StonecutterSettingsGradle {
                 throw new IllegalArgumentException("Invalid list of versions");
 
             this.versions = versions;
+        }
+
+        public void tokensFile(String file) {
+            this.tokensFile = file;
         }
     }
 }

@@ -23,6 +23,7 @@ public class FileCutter {
 
         try (Reader oldContents = Files.newBufferedReader(file.toPath(), StandardCharsets.ISO_8859_1)) {
             applyVersionedCodeComments(oldContents, transformedContents);
+            stonecutter.tokenRemapper().apply(transformedContents);
         }
 
         outputFile.delete();

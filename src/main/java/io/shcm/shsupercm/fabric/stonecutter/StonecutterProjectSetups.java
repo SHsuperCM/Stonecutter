@@ -7,8 +7,8 @@ import java.util.*;
 public class StonecutterProjectSetups {
     private final Map<String, Setup> controllerSetups = new HashMap<>();
 
-    protected boolean registerVersioned(String project, String[] versions) {
-        return this.controllerSetups.putIfAbsent(project, new Setup(versions)) == null;
+    protected boolean registerVersioned(String project, StonecutterSettingsGradle.StonecutterProjectBuilder setupBuilder) {
+        return this.controllerSetups.putIfAbsent(project, new Setup(setupBuilder)) == null;
     }
 
     public Setup get(Project project) {
@@ -17,15 +17,21 @@ public class StonecutterProjectSetups {
 
     public static class Setup {
         private final String[] versions;
+        private final String tokensFile;
         private String current;
         private final Set<String> chiseledTasks = new HashSet<>();
 
-        private Setup(String[] versions) {
-            this.versions = versions;
+        private Setup(StonecutterSettingsGradle.StonecutterProjectBuilder setupBuilder) {
+            this.versions = setupBuilder.versions;
+            this.tokensFile = setupBuilder.tokensFile;
         }
 
         public List<String> versions() {
             return List.of(this.versions);
+        }
+
+        public String tokensFile() {
+            return this.tokensFile;
         }
 
         public String current() {

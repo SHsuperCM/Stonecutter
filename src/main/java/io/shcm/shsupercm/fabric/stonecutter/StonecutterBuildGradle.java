@@ -1,5 +1,6 @@
 package io.shcm.shsupercm.fabric.stonecutter;
 
+import io.shcm.shsupercm.fabric.stonecutter.cutter.StoneRegexTokenizer;
 import io.shcm.shsupercm.fabric.stonecutter.cutter.StonecutterTask;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.SourceSet;
@@ -56,6 +57,7 @@ public class StonecutterBuildGradle {
     public static class Version {
         private final StonecutterBuildGradle plugin;
         private final String version;
+        private StoneRegexTokenizer tokenizer = null;
 
         public Version(StonecutterBuildGradle plugin, String version) {
             this.plugin = plugin;
@@ -72,6 +74,20 @@ public class StonecutterBuildGradle {
 
         public Project project() {
             return this.plugin.project;
+        }
+
+        public StoneRegexTokenizer tokenizer() {
+            if (this.tokenizer == null) {
+                this.tokenizer = new StoneRegexTokenizer();
+                final File tokensFile = project().file(plugin.setup.tokensFile());
+                if (tokensFile.exists())
+                    project().apply(it -> {
+                        it.from(tokensFile);
+                        it.to(this.tokenizer);
+                    });
+            }
+
+            return this.tokenizer;
         }
     }
 }
