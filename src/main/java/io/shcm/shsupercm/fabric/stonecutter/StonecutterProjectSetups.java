@@ -42,7 +42,7 @@ public class StonecutterProjectSetups {
             this.chiseledTasks.add(taskName);
         }
 
-        public boolean isChiseled(Iterable<String> taskNames) {
+        public boolean anyChiseled(Iterable<String> taskNames) {
             for (String taskName : taskNames)
                 if (chiseledTasks.contains(taskName))
                     return true;

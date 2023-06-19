@@ -13,13 +13,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StonecutterControllerGradle {
-    public StonecutterControllerGradle(Project project) {
-        final StonecutterProjectSetups.Setup setup = project.getGradle().getExtensions().getByType(StonecutterProjectSetups.class).get(project);
+    public final Class<ChiseledTask> chiseled = ChiseledTask.class;
+    private final StonecutterProjectSetups.Setup setup;
 
-        project.getExtensions().create("stonecutterSetup", ControllerExt.class, setup);
+    public StonecutterControllerGradle(Project project) {
+        setup = project.getGradle().getExtensions().getByType(StonecutterProjectSetups.class).get(project);
 
         for (String version : setup.versions())
-            project.project(version).getPluginManager().apply(StonecutterPluginSplitter.class);
+            project.project(version).getPluginManager().apply(StonecutterPlugin.class);
 
         project.getTasks().create("chiseledStonecutter", task -> {
             for (String version : setup.versions())
@@ -27,10 +28,10 @@ public class StonecutterControllerGradle {
         });
 
         project.afterEvaluate(afterEvaluate -> {
-            StonecutterBuildGradle.VersionData currentVersionData = afterEvaluate.project(setup.current()).getExtensions().getByType(StonecutterBuildGradle.VersionData.class);
+            StonecutterBuildGradle.Version currentVersionData = afterEvaluate.project(setup.current()).getExtensions().getByType(StonecutterBuildGradle.class).current();
             for (String version : setup.versions()) {
                 Project versionProject = afterEvaluate.project(version);
-                StonecutterBuildGradle.VersionData versionData = versionProject.getExtensions().getByType(StonecutterBuildGradle.VersionData.class);
+                StonecutterBuildGradle.Version versionData = versionProject.getExtensions().getByType(StonecutterBuildGradle.class).current();
                 StonecutterTask task = afterEvaluate.getTasks().create("Set active version to " + versionData.version(), StonecutterTask.class);
                 task.setGroup("stonecutter");
 
@@ -44,7 +45,7 @@ public class StonecutterControllerGradle {
                         File stonecutterGradle = taskRun.getProject().getBuildFile();
                         List<String> stonecutterGradleLines = new ArrayList<>(Files.readAllLines(stonecutterGradle.toPath(), StandardCharsets.ISO_8859_1));
 
-                        stonecutterGradleLines.set(1, "stonecutterSetup.active '" + versionData.version() + "'");
+                        stonecutterGradleLines.set(1, "stonecutter.active '" + versionData.version() + "'");
 
                         stonecutterGradle.delete();
                         Files.write(stonecutterGradle.toPath(), stonecutterGradleLines, StandardCharsets.ISO_8859_1, StandardOpenOption.CREATE);
@@ -56,24 +57,15 @@ public class StonecutterControllerGradle {
         });
     }
 
-    public static class ControllerExt {
-        private final StonecutterProjectSetups.Setup setup;
-        public final Class<ChiseledTask> chiseled = ChiseledTask.class;
+    public void active(String current) {
+        setup.setCurrent(current);
+    }
 
-        public ControllerExt(StonecutterProjectSetups.Setup setup) {
-            this.setup = setup;
-        }
+    public Iterable<String> versions() {
+        return setup.versions();
+    }
 
-        public void active(String current) {
-            setup.setCurrent(current);
-        }
-
-        public Iterable<String> versions() {
-            return setup.versions();
-        }
-
-        public void registerChiseled(TaskProvider<?> registeredTask) {
-            setup.registerChiseled(registeredTask.getName());
-        }
+    public void registerChiseled(TaskProvider<?> registeredTask) {
+        setup.registerChiseled(registeredTask.getName());
     }
 }

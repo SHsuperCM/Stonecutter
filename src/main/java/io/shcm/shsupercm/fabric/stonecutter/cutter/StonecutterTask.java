@@ -13,8 +13,8 @@ import java.util.function.Predicate;
 public abstract class StonecutterTask extends DefaultTask {
     @Input public abstract Property<File> getInputDir();
     @Input public abstract Property<File> getOutputDir();
-    @Input public abstract Property<StonecutterBuildGradle.VersionData> getFromVersion();
-    @Input public abstract Property<StonecutterBuildGradle.VersionData> getToVersion();
+    @Input public abstract Property<StonecutterBuildGradle.Version> getFromVersion();
+    @Input public abstract Property<StonecutterBuildGradle.Version> getToVersion();
     @Input public abstract Property<Predicate<File>> getFileFilter(); { getFileFilter().convention(f -> true); }
 
     private FabricLoaderAPI fabricLoaderAPI = null;

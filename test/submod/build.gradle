@@ -18,8 +18,8 @@ repositories {
 	// for more information about repositories.
 }
 
-System.out.println("[SC] Version: " + stonecutterVersion.version())
-System.out.println("[SC] Is active: " + stonecutterVersion.isActiveVersion())
+System.out.println("[SC] Version: " + stonecutter.current().version())
+System.out.println("[SC] Is active: " + stonecutter.current().isActiveVersion())
 
 dependencies {
 	// To change the versions see the gradle.properties file

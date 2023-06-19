@@ -32,7 +32,7 @@ public class StonecutterSettingsGradle {
                 Files.write(stonecutterGradle.toPath(),
                         """
                         plugins.apply 'io.shcm.shsupercm.fabric.stonecutter'
-                        stonecutterSetup.active '%s'
+                        stonecutter.active '%s'
                         //-------- !DO NOT EDIT ABOVE THIS LINE! --------\\\\
                         """.formatted(builder.versions[0]).getBytes(), StandardOpenOption.CREATE);
         } catch (IOException e) {

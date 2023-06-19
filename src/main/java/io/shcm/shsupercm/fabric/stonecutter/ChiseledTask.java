@@ -7,9 +7,8 @@ import org.gradle.api.tasks.Input;
 
 public abstract class ChiseledTask extends DefaultTask {
     public final StonecutterProjectSetups.Setup setup = getProject().getGradle().getExtensions().getByType(StonecutterProjectSetups.class).get(getProject());
-    @Input public abstract ListProperty<String> getVersions(); {
-        getVersions().convention(() -> setup.versions().iterator());
-    }
+    
+    @Input public abstract ListProperty<String> getVersions(); { getVersions().convention(() -> setup.versions().iterator()); }
 
     private final Task setupChiselTask;
 

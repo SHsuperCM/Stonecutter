@@ -11,16 +11,16 @@ import java.util.Objects;
 public class StonecutterBuildGradle {
     private final Project project;
     private final StonecutterProjectSetups.Setup setup;
-    private final VersionData data;
+    private final Version version;
 
     public StonecutterBuildGradle(Project project) {
         this.project = project;
         this.setup = project.getGradle().getExtensions().getByType(StonecutterProjectSetups.class).get(Objects.requireNonNull(project.getParent()));
-        this.data = project.getExtensions().create("stonecutterVersion", VersionData.class, this);
+        this.version = new Version(this, project.getName());
 
         project.getTasks().register("setupChiseledStonecutterBuild", StonecutterTask.class, task -> {
-            task.getFromVersion().set(project.getParent().project(setup.current()).getExtensions().getByType(VersionData.class));
-            task.getToVersion().set(data);
+            task.getFromVersion().set(project.getParent().project(setup.current()).getExtensions().getByType(StonecutterBuildGradle.class).current());
+            task.getToVersion().set(version);
             task.getInputDir().set(project.getParent().file("./src"));
             task.getOutputDir().set(new File(project.getBuildDir(), "chiseledSrc"));
         });
@@ -29,7 +29,7 @@ public class StonecutterBuildGradle {
     }
 
     private void afterEvaluate(Project project) {
-        if (setup.isChiseled(project.getGradle().getStartParameter().getTaskNames())) {
+        if (setup.anyChiseled(project.getGradle().getStartParameter().getTaskNames())) {
             for (SourceSet sourceSet : (SourceSetContainer) Objects.requireNonNull(project.property("sourceSets"))) {
                 sourceSet.getJava().srcDir(new File(project.getBuildDir(), "chiseledSrc/" + sourceSet.getName() + "/java"));
                 sourceSet.getResources().srcDir(new File(project.getBuildDir(), "chiseledSrc/" + sourceSet.getName() + "/resources"));
@@ -37,7 +37,7 @@ public class StonecutterBuildGradle {
             return;
         }
 
-        if (this.data.isActiveVersion()) {
+        if (this.version.isActiveVersion()) {
             for (SourceSet sourceSet : (SourceSetContainer) Objects.requireNonNull(project.property("sourceSets"))) {
                 sourceSet.getJava().srcDir("../../src/" + sourceSet.getName() + "/java");
                 sourceSet.getResources().srcDir("../../src/" + sourceSet.getName() + "/resources");
@@ -45,13 +45,21 @@ public class StonecutterBuildGradle {
         }
     }
 
-    public static class VersionData {
+    public Version current() {
+        return this.version;
+    }
+
+    public Iterable<String> versions() {
+        return setup.versions();
+    }
+
+    public static class Version {
         private final StonecutterBuildGradle plugin;
         private final String version;
 
-        public VersionData(StonecutterBuildGradle plugin) {
+        public Version(StonecutterBuildGradle plugin, String version) {
             this.plugin = plugin;
-            this.version = plugin.project.getName();
+            this.version = version;
         }
 
         public String version() {
