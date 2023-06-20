@@ -40,10 +40,16 @@ public class StonecutterSettingsGradle {
         }
 
         for (String version : builder.versions) {
-            String path = project.getPath() + ":" + version;
+            String path = project.getPath();
+            if (!path.endsWith(":"))
+                path = path + ":";
+            path = path + version;
+
             settings.include(path);
             ProjectDescriptor versionedProject = settings.project(path);
-            versionedProject.setProjectDir(new File(project.getProjectDir(), "/versions/" + version));
+            File versionDir = new File(project.getProjectDir(), "/versions/" + version);
+            versionDir.mkdirs();
+            versionedProject.setProjectDir(versionDir);
             versionedProject.setBuildFileName("../../build.gradle");
             versionedProject.setName(version);
         }
