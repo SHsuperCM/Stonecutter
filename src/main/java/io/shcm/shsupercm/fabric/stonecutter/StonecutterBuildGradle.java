@@ -1,5 +1,6 @@
 package io.shcm.shsupercm.fabric.stonecutter;
 
+import groovy.lang.MissingPropertyException;
 import io.shcm.shsupercm.fabric.stonecutter.cutter.StoneRegexTokenizer;
 import io.shcm.shsupercm.fabric.stonecutter.cutter.StonecutterTask;
 import org.gradle.api.Project;
@@ -30,20 +31,22 @@ public class StonecutterBuildGradle {
     }
 
     private void afterEvaluate(Project project) {
-        if (setup.anyChiseled(project.getGradle().getStartParameter().getTaskNames())) {
-            for (SourceSet sourceSet : (SourceSetContainer) Objects.requireNonNull(project.property("sourceSets"))) {
-                sourceSet.getJava().srcDir(new File(project.getBuildDir(), "chiseledSrc/" + sourceSet.getName() + "/java"));
-                sourceSet.getResources().srcDir(new File(project.getBuildDir(), "chiseledSrc/" + sourceSet.getName() + "/resources"));
+        try {
+            if (setup.anyChiseled(project.getGradle().getStartParameter().getTaskNames())) {
+                for (SourceSet sourceSet : (SourceSetContainer) Objects.requireNonNull(project.property("sourceSets"))) {
+                    sourceSet.getJava().srcDir(new File(project.getBuildDir(), "chiseledSrc/" + sourceSet.getName() + "/java"));
+                    sourceSet.getResources().srcDir(new File(project.getBuildDir(), "chiseledSrc/" + sourceSet.getName() + "/resources"));
+                }
+                return;
             }
-            return;
-        }
 
-        if (this.version.isActiveVersion()) {
-            for (SourceSet sourceSet : (SourceSetContainer) Objects.requireNonNull(project.property("sourceSets"))) {
-                sourceSet.getJava().srcDir("../../src/" + sourceSet.getName() + "/java");
-                sourceSet.getResources().srcDir("../../src/" + sourceSet.getName() + "/resources");
+            if (this.version.isActiveVersion()) {
+                for (SourceSet sourceSet : (SourceSetContainer) Objects.requireNonNull(project.property("sourceSets"))) {
+                    sourceSet.getJava().srcDir("../../src/" + sourceSet.getName() + "/java");
+                    sourceSet.getResources().srcDir("../../src/" + sourceSet.getName() + "/resources");
+                }
             }
-        }
+        } catch (MissingPropertyException ignored) { }
     }
 
     public Version current() {
