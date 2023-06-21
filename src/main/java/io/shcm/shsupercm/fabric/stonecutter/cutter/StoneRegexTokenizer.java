@@ -34,6 +34,8 @@ public class StoneRegexTokenizer {
     }
 
     public void apply(StringBuilder value) {
+        if (tokens.isEmpty())
+            return;
         CharSequence applied = value;
         for (Token token : tokens.values())
             applied = token.apply(applied);
