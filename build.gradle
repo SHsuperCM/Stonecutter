@@ -8,7 +8,7 @@ repositories {
     gradlePluginPortal()
 }
 
-version = '1.1'
+version = '1.2'
 group = 'io.shcm.shsupercm.fabric'
 
 gradlePlugin {
