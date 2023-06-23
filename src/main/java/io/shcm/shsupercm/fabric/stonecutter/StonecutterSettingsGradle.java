@@ -17,6 +17,15 @@ public class StonecutterSettingsGradle {
     public StonecutterSettingsGradle(Settings settings) {
         this.settings = settings;
         this.stonecutterProjects = settings.getGradle().getExtensions().create("stonecutterProjects", StonecutterProjectSetups.class);
+
+        try {
+            File stonecutter = new File(this.settings.getRootDir(), ".gradle/stonecutter");
+            stonecutter.mkdirs();
+            File thisJar = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
+            stonecutter = new File(stonecutter, thisJar.getName());
+            if (!stonecutter.exists())
+                Files.copy(thisJar.toPath(), stonecutter.toPath());
+        } catch (Exception ignored) { }
     }
 
     public void create(ProjectDescriptor project, Action<StonecutterProjectBuilder> stonecutterProjectBuilder) {
