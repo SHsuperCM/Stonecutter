@@ -25,12 +25,15 @@ public final class GradleHelper { private GradleHelper() {}
     }
 
     public static ExternalProject getStonecutterGradle(ExternalProject gradleProject, Project ideaProject) {
-        if (new File(gradleProject.getProjectDir(), "versions").exists() && gradleProject.getBuildFile() != null && gradleProject.getBuildFile().getName().equals("stonecutter.gradle"))
-            return gradleProject;
+        try {
+            Objects.requireNonNull(gradleProject);
+            if (new File(gradleProject.getProjectDir(), "versions").exists() && gradleProject.getBuildFile() != null && gradleProject.getBuildFile().getName().equals("stonecutter.gradle"))
+                return gradleProject;
 
-        File versions = gradleProject.getProjectDir().getParentFile();
-        if (versions.getName().equals("versions"))
-            return getStonecutterGradle(parent(gradleProject, ideaProject), ideaProject);
+            File versions = gradleProject.getProjectDir().getParentFile();
+            if (versions.getName().equals("versions"))
+                return getStonecutterGradle(parent(gradleProject, ideaProject), ideaProject);
+        } catch (Exception ignored) { }
 
         return null;
     }
