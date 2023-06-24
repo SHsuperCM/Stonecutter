@@ -23,6 +23,7 @@
                          implementationClass="io.shcm.shsupercm.fabric.stonecutter.idea.inspections.UnclosedInspection"/>
 
         <lang.foldingBuilder language="JAVA" implementationClass="io.shcm.shsupercm.fabric.stonecutter.idea.ext.CutterFolding"/>
+        <editorFactoryMouseListener implementation="io.shcm.shsupercm.fabric.stonecutter.idea.ext.EditorMouseClick"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.plugins.gradle">
@@ -30,6 +31,10 @@
     </extensions>
 
     <actions>
-        <!-- Add your actions here -->
+        <action id="io.shcm.shsupercm.fabric.stonecutter.idea.actions.OpenStonecutterEditorAction"
+                class="io.shcm.shsupercm.fabric.stonecutter.idea.actions.OpenStonecutterEditorAction"
+                text="Stonecutter Editor" description="Opens the editor&#39;s stonecutter">
+            <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl S"/>
+        </action>
     </actions>
 </idea-plugin>
