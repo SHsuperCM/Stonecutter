@@ -10,6 +10,8 @@
     <depends>org.jetbrains.plugins.gradle</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <projectService serviceImplementation="io.shcm.shsupercm.fabric.stonecutter.idea.StonecutterService"/>
+
         <localInspection language="JAVA"
                          bundle="Lang"
                          key="inspection.stonecutter.close_expression.display.name"
@@ -18,9 +20,13 @@
                          groupKey="inspection.stonecutter.group"
                          enabledByDefault="true"
                          level="ERROR"
-                         implementationClass="io.shcm.shsupercm.fabric.stonecutter.idea.UnclosedInspection"/>
+                         implementationClass="io.shcm.shsupercm.fabric.stonecutter.idea.inspections.UnclosedInspection"/>
 
-        <lang.foldingBuilder language="JAVA" implementationClass="io.shcm.shsupercm.fabric.stonecutter.idea.CutterFolding"/>
+        <lang.foldingBuilder language="JAVA" implementationClass="io.shcm.shsupercm.fabric.stonecutter.idea.ext.CutterFolding"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="org.jetbrains.plugins.gradle">
+        <projectResolve implementation="io.shcm.shsupercm.fabric.stonecutter.idea.StonecutterService$ReloadListener"/>
     </extensions>
 
     <actions>

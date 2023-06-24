@@ -1,4 +1,4 @@
-package io.shcm.shsupercm.fabric.stonecutter.idea;
+package io.shcm.shsupercm.fabric.stonecutter.idea.inspections;
 
 import com.intellij.codeInspection.AbstractBaseJavaLocalInspectionTool;
 import com.intellij.codeInspection.ProblemHighlightType;
@@ -6,13 +6,13 @@ import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.psi.JavaElementVisitor;
 import com.intellij.psi.PsiComment;
 import com.intellij.psi.PsiElementVisitor;
-import io.shcm.shsupercm.fabric.stonecutter.idea.util.GradleHelper;
+import io.shcm.shsupercm.fabric.stonecutter.idea.StonecutterService;
 import org.jetbrains.annotations.NotNull;
 
 public class UnclosedInspection extends AbstractBaseJavaLocalInspectionTool {
     @Override
     public @NotNull PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
-        if (GradleHelper.isStonecutter(holder.getFile()))
+        if (holder.getProject().getService(StonecutterService.class).fromVersionedFile(holder.getFile().getVirtualFile()) == null)
             return super.buildVisitor(holder, isOnTheFly);
 
         return new JavaElementVisitor() {

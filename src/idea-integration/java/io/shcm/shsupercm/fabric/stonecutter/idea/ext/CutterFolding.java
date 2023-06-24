@@ -1,4 +1,4 @@
-package io.shcm.shsupercm.fabric.stonecutter.idea;
+package io.shcm.shsupercm.fabric.stonecutter.idea.ext;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.folding.FoldingBuilder;
@@ -8,8 +8,7 @@ import com.intellij.openapi.editor.FoldingGroup;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.JavaTokenType;
 import com.intellij.psi.PsiComment;
-import com.intellij.psi.PsiFile;
-import io.shcm.shsupercm.fabric.stonecutter.idea.util.GradleHelper;
+import io.shcm.shsupercm.fabric.stonecutter.idea.StonecutterService;
 
 import java.util.*;
 
@@ -20,7 +19,7 @@ public class CutterFolding implements FoldingBuilder {
 
     @Override
     public FoldingDescriptor[] buildFoldRegions(ASTNode node, Document document) {
-        if (node.getPsi() instanceof PsiFile && !GradleHelper.isStonecutter(node.getPsi(PsiFile.class)))
+        if (node.getPsi().getProject().getService(StonecutterService.class).fromVersionedFile(node.getPsi().getContainingFile().getVirtualFile()) == null)
             return FoldingDescriptor.EMPTY;
 
         descriptors = new ArrayList<>();
