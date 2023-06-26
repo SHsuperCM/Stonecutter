@@ -21,6 +21,7 @@ public class EditorMouseClick implements EditorMouseListener {
         if (clickedFolding != null) {
             String text = clickedFolding.getEditor().getDocument().getText(TextRange.create(clickedFolding.getStartOffset() - 1, clickedFolding.getEndOffset()));
             if (text.startsWith("/*?") && text.endsWith("?*/")) {
+                event.getEditor().getCaretModel().moveToOffset(clickedFolding.getStartOffset());
                 event.consume();
                 ActionManager.getInstance().tryToExecute(ActionManager.getInstance().getAction(OpenStonecutterEditorAction.class.getName()), event.getMouseEvent(), event.getEditor().getComponent(), null, true);
             } else if (text.startsWith("/*")) {
@@ -29,6 +30,7 @@ public class EditorMouseClick implements EditorMouseListener {
                         clickedFolding = foldRegion;
                         text = clickedFolding.getEditor().getDocument().getText(TextRange.create(clickedFolding.getStartOffset(), clickedFolding.getEndOffset()));
                         if (text.startsWith("/*?") && text.endsWith("?*/")) {
+                            event.getEditor().getCaretModel().moveToOffset(clickedFolding.getStartOffset() + 1);
                             event.consume();
                             ActionManager.getInstance().tryToExecute(ActionManager.getInstance().getAction(OpenStonecutterEditorAction.class.getName()), event.getMouseEvent(), event.getEditor().getComponent(), null, true);
                             return;

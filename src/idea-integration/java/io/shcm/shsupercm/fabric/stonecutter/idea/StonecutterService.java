@@ -1,5 +1,9 @@
 package io.shcm.shsupercm.fabric.stonecutter.idea;
 
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationGroup;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
 import com.intellij.openapi.module.Module;
@@ -31,6 +35,10 @@ public class StonecutterService {
     public StonecutterService(Project project) {
         this.project = project;
         loadFromProject();
+    }
+
+    public void switchActive(String version) {
+        Notifications.Bus.notify(new Notification(NotificationGroup.createIdWithTitle("stonecutter", "Stonecutter"), "Stonecutter", "Switching active stonecutter version to " + version, NotificationType.INFORMATION));
     }
 
     public StonecutterSetup fromControllerModule(Module module) {
