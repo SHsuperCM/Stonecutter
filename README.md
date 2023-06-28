@@ -76,10 +76,10 @@ The versions of the stonecutter project have their directories in the controller
 Look at the [commits](https://github.com/SHsuperCM/Stonecutter/commits/main) for a changelog.
 
 ## Planned
-- [ ] Making a wiki and actually explaining how to operate Stonecutter
-- [ ] Add a way to remap the project through the versions using Loom's mappings and Mercury
-- [ ] Make the Intellij IDEA plugin easier to install
-- [ ] Add more integration features to the Intellij IDEA plugin(switch versions, insert versioned code, create tokens, etc..)
+- [ ] Make a wiki and actually explaining how to operate Stonecutter
+- [ ] Intellij Integration: Add easy way of using tokenizer
+- [x] Make the Intellij IDEA plugin easier to install
+- [x] Add more integration features to the Intellij IDEA plugin(switch versions, insert versioned code, etc..)
 - [x] Proprocessor-style commenting formatter
 - [x] Intellij IDEA integration
 - [x] Chiseled Tasks
