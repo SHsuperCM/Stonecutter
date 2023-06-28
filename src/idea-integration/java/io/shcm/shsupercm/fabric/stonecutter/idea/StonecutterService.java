@@ -1,5 +1,6 @@
 package io.shcm.shsupercm.fabric.stonecutter.idea;
 
+import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationType;
@@ -15,6 +16,7 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.plugins.gradle.action.GradleExecuteTaskAction;
 import org.jetbrains.plugins.gradle.model.ExternalProject;
 import org.jetbrains.plugins.gradle.service.project.AbstractProjectResolverExtension;
 import org.jetbrains.plugins.gradle.service.project.data.ExternalProjectDataCache;
@@ -43,6 +45,8 @@ public class StonecutterService {
 
     public void switchActive(String version) {
         Notifications.Bus.notify(new Notification(NotificationGroup.createIdWithTitle("stonecutter", "Stonecutter"), "Stonecutter", "Switching active stonecutter version to " + version, NotificationType.INFORMATION));
+
+        GradleExecuteTaskAction.runGradle(project, DefaultRunExecutor.getRunExecutorInstance(), project.getBasePath(), "\"Set active version to " + version + "\"");
     }
 
     public StonecutterSetup fromControllerModule(Module module) {
