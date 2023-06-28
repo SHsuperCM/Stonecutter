@@ -12,12 +12,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.plugins.gradle.model.ExternalProject;
 import org.jetbrains.plugins.gradle.service.project.AbstractProjectResolverExtension;
 import org.jetbrains.plugins.gradle.service.project.data.ExternalProjectDataCache;
 
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -28,6 +30,8 @@ import java.util.Objects;
 import java.util.function.Function;
 
 public class StonecutterService {
+    public static final Icon ICON = IconLoader.getIcon("/Stonecutter.svg", StonecutterService.class);
+
     private final Project project;
 
     private final Map<Module, StonecutterSetup> byController = new HashMap<>(), byVersioned = new HashMap<>();
