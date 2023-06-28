@@ -40,33 +40,38 @@ Stonecutter is able to set up any task(usually builds or publication tasks), to 
 ... (section not finished)
 
 ### Intellij IDEA plugin
-Stonecutter also contains a complementing IDE plugin for Intellij based software. The plugin is meant to ease the usage of Stonecutter but Stonecutter can definitely work without it.
+Stonecutter also contains a complementing IDE plugin for Intellij based IDEs. The plugin is meant to ease the usage of Stonecutter but Stonecutter can also work without it.
 
-To install the plugin, [download the same gradle plugin jar from the maven](https://plugins.gradle.org/m2/io/shcm/shsupercm/fabric/Stonecutter/) and add it to IDEA through the plugins screen.
-(I am working on making this easier to do)
+To install the plugin:
+1. Open the plugins section in Intellij IDEA(`Ctrl`+`Alt`+`S` → Plugins)
+2. Click the gear button at the top
+3. Click "Install Plugin from Disk..."
+4. Go to the project folder and open `/.gradle/stonecutter/Stonecutter-<version>.jar` (if it's not there, refresh gradle first)
+
+To use the plugin's editor, hit `Ctrl`+`Shift`+`S` while working on a stonecutter project.
 
 ... (section not finished)
 
 ## Setup
-The way Stonecutter works, is by applying onto the projects `settings.gradle` to hijack the buildscript of the target multiversion project.
+The way Stonecutter works, is by applying onto the project's `settings.gradle` to hijack the buildscript locations of the target multiversion project.
 
 Example:
 > `settings.gradle`
 ```groovy
 plugins {
-	id 'io.shcm.shsupercm.fabric.stonecutter' version '1.0'
+    id 'io.shcm.shsupercm.fabric.stonecutter' version '1.3.1'
 }
 
 // in this example we'll convert :versionedProject into a multi-versioned "stonecutter" project
 include ':versionedProject'
 
 stonecutter.create(project(':versionedProject')) {
-  // the following definition will add projects ':versionedProject:1.18.2' through to ':versionedProject:1.20'
-	versions '1.20', '1.19.4', '1.19.2', '1.18.2'
+    // the following definition will add projects ':versionedProject:1.18.2' through to ':versionedProject:1.20'
+    versions '1.20', '1.19.4', '1.19.2', '1.18.2'
 }
 ```
 
-Refreshing gradle will then create a new script named `stonecutter.gradle` which is the buildscript of the "controller" versioned project.
+Refreshing gradle will then create a new script named `stonecutter.gradle` which is the buildscript of the "controller" of the project.
 
 The versions of the stonecutter project have their directories in the controller project's `./versions/<VERSION>/`. Those can have their own `gradle.properties` and build/run directories.
 
@@ -77,7 +82,7 @@ Look at the [commits](https://github.com/SHsuperCM/Stonecutter/commits/main) for
 
 ## Planned
 - [ ] Make a wiki and actually explaining how to operate Stonecutter
-- [ ] Intellij Integration: Add easy way of using tokenizer
+- [ ] Intellij Integration: Add easy way of using the tokenizer
 - [x] Make the Intellij IDEA plugin easier to install
 - [x] Add more integration features to the Intellij IDEA plugin(switch versions, insert versioned code, etc..)
 - [x] Proprocessor-style commenting formatter
