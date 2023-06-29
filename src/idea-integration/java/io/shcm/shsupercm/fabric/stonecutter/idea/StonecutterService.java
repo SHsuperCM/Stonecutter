@@ -46,7 +46,7 @@ public class StonecutterService {
     public void switchActive(String version) {
         Notifications.Bus.notify(new Notification(NotificationGroup.createIdWithTitle("stonecutter", "Stonecutter"), "Stonecutter", "Switching active stonecutter version to " + version, NotificationType.INFORMATION));
 
-        GradleExecuteTaskAction.runGradle(project, DefaultRunExecutor.getRunExecutorInstance(), project.getBasePath(), "\"Set active version to " + version + "\"");
+        GradleExecuteTaskAction.runGradle(project, DefaultRunExecutor.getRunExecutorInstance(), project.getBasePath(), "\"Set active version to " + version + "\" -Dstonecutter.disableCentralBuildScript=true");
     }
 
     public StonecutterSetup fromControllerModule(Module module) {
