@@ -59,8 +59,9 @@ public class StonecutterSettingsGradle {
             File versionDir = new File(project.getProjectDir(), "/versions/" + version);
             versionDir.mkdirs();
             versionedProject.setProjectDir(versionDir);
-            versionedProject.setBuildFileName("../../build.gradle");
             versionedProject.setName(version);
+            if (!Boolean.getBoolean("stonecutter.disableCentralBuildScript"))
+                versionedProject.setBuildFileName("../../build.gradle");
         }
     }
 
