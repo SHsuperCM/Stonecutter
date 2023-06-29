@@ -4,10 +4,13 @@ import groovy.lang.MissingPropertyException;
 import io.shcm.shsupercm.fabric.stonecutter.cutter.StoneRegexTokenizer;
 import io.shcm.shsupercm.fabric.stonecutter.cutter.StonecutterTask;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.util.Objects;
 
 public class StonecutterBuildGradle {
@@ -31,6 +34,22 @@ public class StonecutterBuildGradle {
     }
 
     private void afterEvaluate(Project project) {
+        File loaderCopy = new File(project.getRootDir(), ".gradle/stonecutter");
+        loaderCopy.mkdirs();
+        loaderCopy = new File(loaderCopy, "fabric-loader.jar");
+        if (!loaderCopy.exists())
+            loaderSearch: for (Configuration configuration : project.getConfigurations())
+                for (Dependency dependency : configuration.getDependencies())
+                    if ("net.fabricmc".equals(dependency.getGroup()) && "fabric-loader".equals(dependency.getName()))
+                        for (File file : configuration.getFiles())
+                            if (file.getName().startsWith("fabric-loader")) {
+                                try {
+                                    Files.copy(file.toPath(), loaderCopy.toPath());
+                                    break loaderSearch;
+                                } catch (Exception ignored) { }
+                            }
+
+
         try {
             if (setup.anyChiseled(project.getGradle().getStartParameter().getTaskNames())) {
                 for (SourceSet sourceSet : (SourceSetContainer) Objects.requireNonNull(project.property("sourceSets"))) {

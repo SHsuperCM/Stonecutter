@@ -1,13 +1,16 @@
 package io.shcm.shsupercm.fabric.stonecutter.cutter;
 
 import io.shcm.shsupercm.fabric.stonecutter.StonecutterBuildGradle;
+import io.shcm.shsupercm.fabric.stonecutter.version.StonecutterVersionChecker;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.Project;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public abstract class StonecutterTask extends DefaultTask {
@@ -16,9 +19,9 @@ public abstract class StonecutterTask extends DefaultTask {
     @Input public abstract Property<StonecutterBuildGradle.Version> getFromVersion();
     @Input public abstract Property<StonecutterBuildGradle.Version> getToVersion();
     @Input public abstract Property<Predicate<File>> getFileFilter(); { getFileFilter().convention(f -> true); }
+    @Input public abstract Property<Function<Project, StonecutterVersionChecker>> getVersionChecker(); { getVersionChecker().convention(StonecutterVersionChecker.FABRIC_LOADER_API); }
 
-    private FabricLoaderAPI fabricLoaderAPI = null;
-    private Object targetSemVersion;
+    private Predicate<String> versionChecker = predicate -> false;
 
     private StoneRegexTokenizer remapTokenizer = null;
 
@@ -28,11 +31,12 @@ public abstract class StonecutterTask extends DefaultTask {
             throw new IllegalArgumentException();
 
         try {
-            this.fabricLoaderAPI = FabricLoaderAPI.fromDependencies(getToVersion().get().project());
-            this.targetSemVersion = this.fabricLoaderAPI.parseVersion(getToVersion().get().version());
+            final StonecutterVersionChecker versionCheckerImplementation = getVersionChecker().get().apply(getProject());
+            final Object targetCheckerVersion = versionCheckerImplementation.parseVersion(getToVersion().get().version());
+            this.versionChecker = predicate -> versionCheckerImplementation.check(targetCheckerVersion, predicate);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Could not get fabric loader api from dependencies!", e);
+            throw new RuntimeException("Could not create version checker implementation", e);
         }
 
         try {
@@ -74,13 +78,7 @@ public abstract class StonecutterTask extends DefaultTask {
     }
 
     public boolean testVersion(String predicate) {
-        try {
-            return Objects.requireNonNull(this.fabricLoaderAPI, "API not initialized")
-                    .parseVersionPredicate(predicate).test(this.targetSemVersion);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+        return this.versionChecker.test(predicate);
     }
 
     public StoneRegexTokenizer tokenRemapper() {
