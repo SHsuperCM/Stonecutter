@@ -58,11 +58,19 @@ public class StonecutterService {
     }
 
     public StonecutterSetup fromControllerFile(VirtualFile file) {
-        return fromControllerModule(ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(file));
+        try {
+            return fromControllerModule(ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(file));
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     public StonecutterSetup fromVersionedFile(VirtualFile file) {
-        return fromVersionedModule(ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(file));
+        try {
+            return fromVersionedModule(ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(file));
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     public void loadFromProject() {
