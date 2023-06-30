@@ -1,6 +1,7 @@
 package io.shcm.shsupercm.fabric.stonecutter;
 
 import org.gradle.api.Action;
+import org.gradle.api.GradleException;
 import org.gradle.api.initialization.ProjectDescriptor;
 import org.gradle.api.initialization.Settings;
 
@@ -13,6 +14,8 @@ import java.util.Set;
 public class StonecutterSettingsGradle {
     private final Settings settings;
     private final StonecutterProjectSetups stonecutterProjects;
+
+    private StonecutterProjectBuilder shared = StonecutterProjectBuilder.DEFAULT;
 
     public StonecutterSettingsGradle(Settings settings) {
         this.settings = settings;
@@ -28,8 +31,23 @@ public class StonecutterSettingsGradle {
         } catch (Exception ignored) { }
     }
 
+    public void shared(Action<StonecutterProjectBuilder> stonecutterProjectBuilder) {
+        this.shared = new StonecutterProjectBuilder(shared, stonecutterProjectBuilder);
+    }
+
+    public void create(ProjectDescriptor... projects) {
+        for (ProjectDescriptor project : projects)
+            create(project, builder -> {
+                if (builder.versions.length == 0)
+                    throw new GradleException("[Stonecutter] To create a stonecutter project without a configuration element, make use of shared default values.");
+            });
+    }
+
     public void create(ProjectDescriptor project, Action<StonecutterProjectBuilder> stonecutterProjectBuilder) {
-        StonecutterProjectBuilder builder = new StonecutterProjectBuilder(stonecutterProjectBuilder);
+        StonecutterProjectBuilder builder = new StonecutterProjectBuilder(shared, stonecutterProjectBuilder);
+
+        if (builder.versions.length == 0)
+            throw new GradleException("[Stonecutter] Stonecutter projects must have at the very least one version specified.");
 
         if (!stonecutterProjects.registerVersioned(project.getPath(), builder))
             throw new IllegalArgumentException("Project already registered as a stonecutter project");
@@ -66,10 +84,15 @@ public class StonecutterSettingsGradle {
     }
 
     public static class StonecutterProjectBuilder {
-        protected String[] versions;
+        public static final StonecutterProjectBuilder DEFAULT = new StonecutterProjectBuilder(); StonecutterProjectBuilder() { }
+
+        protected String[] versions = new String[0];
         protected String tokensFile = "./tokens.gradle";
 
-        private StonecutterProjectBuilder(Action<StonecutterProjectBuilder> builder) {
+        protected StonecutterProjectBuilder(StonecutterProjectBuilder defaultValues, Action<StonecutterProjectBuilder> builder) {
+            this.versions = defaultValues.versions;
+            this.tokensFile = defaultValues.tokensFile;
+
             builder.execute(this);
         }
 
