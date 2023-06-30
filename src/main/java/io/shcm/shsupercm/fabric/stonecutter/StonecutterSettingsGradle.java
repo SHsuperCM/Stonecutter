@@ -77,8 +77,11 @@ public class StonecutterSettingsGradle {
 
             settings.include(path);
             ProjectDescriptor versionedProject = settings.project(path);
+
             File versionDir = new File(project.getProjectDir(), "/versions/" + version);
             versionDir.mkdirs();
+            try { new File(versionDir, "tokens.gradle").createNewFile(); } catch (IOException ignored) { }
+
             versionedProject.setProjectDir(versionDir);
             versionedProject.setName(version);
             if (!Boolean.getBoolean("stonecutter.disableCentralBuildScript"))
@@ -91,12 +94,10 @@ public class StonecutterSettingsGradle {
 
         protected String[] versions = new String[0];
         protected String vcsVersion = null;
-        protected String tokensFile = "./tokens.gradle";
 
         protected StonecutterProjectBuilder(StonecutterProjectBuilder defaultValues, Action<StonecutterProjectBuilder> builder) {
             this.versions = defaultValues.versions;
             this.vcsVersion = defaultValues.vcsVersion;
-            this.tokensFile = defaultValues.tokensFile;
 
             builder.execute(this);
         }
@@ -110,10 +111,6 @@ public class StonecutterSettingsGradle {
 
         public void vcsVersion(String version) {
             this.vcsVersion = version;
-        }
-
-        public void tokensFile(String file) {
-            this.tokensFile = file;
         }
     }
 }

@@ -101,7 +101,7 @@ public class StonecutterBuildGradle {
         public StoneRegexTokenizer tokenizer() {
             if (this.tokenizer == null) {
                 this.tokenizer = new StoneRegexTokenizer();
-                final File tokensFile = project().file(plugin.setup.tokensFile());
+                final File tokensFile = project().file("tokens.gradle");
                 if (tokensFile.exists())
                     project().apply(it -> {
                         it.from(tokensFile);
