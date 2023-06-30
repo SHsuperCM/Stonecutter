@@ -49,6 +49,9 @@ public class StonecutterSettingsGradle {
         if (builder.versions.length == 0)
             throw new GradleException("[Stonecutter] Stonecutter projects must have at the very least one version specified.");
 
+        if (builder.vcsVersion == null)
+            builder.vcsVersion = builder.versions[0];
+
         if (!stonecutterProjects.registerVersioned(project.getPath(), builder))
             throw new IllegalArgumentException("Project already registered as a stonecutter project");
 
@@ -61,7 +64,7 @@ public class StonecutterSettingsGradle {
                         plugins.apply 'io.shcm.shsupercm.fabric.stonecutter'
                         stonecutter.active '%s'
                         //-------- !DO NOT EDIT ABOVE THIS LINE! --------\\\\
-                        """.formatted(builder.versions[0]).getBytes(), StandardOpenOption.CREATE);
+                        """.formatted(builder.vcsVersion).getBytes(), StandardOpenOption.CREATE);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -87,10 +90,12 @@ public class StonecutterSettingsGradle {
         public static final StonecutterProjectBuilder DEFAULT = new StonecutterProjectBuilder(); StonecutterProjectBuilder() { }
 
         protected String[] versions = new String[0];
+        protected String vcsVersion = null;
         protected String tokensFile = "./tokens.gradle";
 
         protected StonecutterProjectBuilder(StonecutterProjectBuilder defaultValues, Action<StonecutterProjectBuilder> builder) {
             this.versions = defaultValues.versions;
+            this.vcsVersion = defaultValues.vcsVersion;
             this.tokensFile = defaultValues.tokensFile;
 
             builder.execute(this);
@@ -101,6 +106,10 @@ public class StonecutterSettingsGradle {
                 throw new IllegalArgumentException("Invalid list of versions");
 
             this.versions = versions;
+        }
+
+        public void vcsVersion(String version) {
+            this.vcsVersion = version;
         }
 
         public void tokensFile(String file) {

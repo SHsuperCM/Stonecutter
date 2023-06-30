@@ -17,13 +17,16 @@ public class StonecutterProjectSetups {
 
     public static class Setup {
         private final String[] versions;
-        private final String tokensFile;
+        private final String vcsVersion, tokensFile;
         private String current;
         private final Set<String> chiseledTasks = new HashSet<>();
 
         private Setup(StonecutterSettingsGradle.StonecutterProjectBuilder setupBuilder) {
             this.versions = setupBuilder.versions;
+            this.vcsVersion = setupBuilder.vcsVersion;
             this.tokensFile = setupBuilder.tokensFile;
+
+            this.current = vcsVersion;
         }
 
         public List<String> versions() {
