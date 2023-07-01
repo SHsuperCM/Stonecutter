@@ -23,7 +23,7 @@ public class FileCutter {
 
         try (Reader oldContents = Files.newBufferedReader(file.toPath(), StandardCharsets.ISO_8859_1)) {
             applyVersionedCodeComments(oldContents, transformedContents);
-            stonecutter.tokenRemapper().apply(transformedContents);
+            stonecutter.tokenRemapper().apply(file, transformedContents);
         }
 
         outputFile.delete();
@@ -37,6 +37,9 @@ public class FileCutter {
             if (expression == null)
                 throw new StonecutterSyntaxException("Expected ?*/ to close stonecutter expression");
             expression = expression.trim();
+
+            if (expression.startsWith("$token"))
+                continue;
 
             Boolean closedState = null;
             final boolean skip;
