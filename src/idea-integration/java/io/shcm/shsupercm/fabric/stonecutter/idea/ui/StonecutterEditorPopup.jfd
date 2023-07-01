@@ -65,6 +65,11 @@ new FormModel {
 				"text": "New Constraint"
 				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "clickNewConstraint", true ) )
 			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "bNewElse"
+				"text": "New Else"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "clickNewElse", true ) )
+			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 185 )
 			"size": new java.awt.Dimension( 300, 45 )

@@ -86,6 +86,9 @@ public class StonecutterEditorPopup extends JPanel {
             add(pNewConstraint, BorderLayout.CENTER);
             bNewConstraint.requestFocusInWindow(FocusEvent.Cause.ACTIVATION);
             firstFocus = bNewConstraint;
+
+            int start = editor.getSelectionModel().getSelectionStart();
+            bNewElse.setEnabled(start > 4 && editor.getDocument().getText(TextRange.create(start - 4, start)).equals("}?*/"));
         } else {
             firstFocus = bVersion;
         }
@@ -131,6 +134,30 @@ public class StonecutterEditorPopup extends JPanel {
         });
     }
 
+    private void clickNewElse(ActionEvent e) {
+        StackingPopupDispatcher.getInstance().closeActivePopup();
+        String selectionText = editor.getSelectionModel().getSelectedText();
+        if (selectionText == null)
+            return;
+        WriteCommandAction.runWriteCommandAction(project, null, null, () -> {
+            int selectionStart = editor.getSelectionModel().getSelectionStart(),
+                selectionEnd = editor.getSelectionModel().getSelectionEnd(),
+                endLine = editor.getDocument().getLineNumber(selectionEnd), endLineStartOffset = editor.getDocument().getLineStartOffset(endLine), endLineEndOffset = editor.getDocument().getLineEndOffset(endLine);
+            editor.getSelectionModel().removeSelection();
+
+            if (editor.getDocument().getText(TextRange.create(selectionEnd, endLineEndOffset)).isBlank()) {
+                String newLine = "\n" + CodeStyleManager.getInstance(project).getLineIndent(editor.getDocument(), endLineEndOffset);
+                editor.getDocument().insertString(selectionEnd, newLine);
+                selectionEnd += newLine.length();
+            }
+
+            editor.getDocument().insertString(selectionEnd, "/*?}?*/");
+
+            editor.getDocument().insertString(selectionStart - 3, " else {");
+            editor.getCaretModel().moveToOffset(selectionStart - 6);
+        });
+    }
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
         pTopButtons = new JPanel();
@@ -140,6 +167,7 @@ public class StonecutterEditorPopup extends JPanel {
         tSyntax = new JTextField();
         pNewConstraint = new JPanel();
         bNewConstraint = new JButton();
+        bNewElse = new JButton();
 
         //======== this ========
         setLayout(new BorderLayout(5, 5));
@@ -183,6 +211,11 @@ public class StonecutterEditorPopup extends JPanel {
             bNewConstraint.setText("New Constraint");
             bNewConstraint.addActionListener(e -> clickNewConstraint(e));
             pNewConstraint.add(bNewConstraint);
+
+            //---- bNewElse ----
+            bNewElse.setText("New Else");
+            bNewElse.addActionListener(e -> clickNewElse(e));
+            pNewConstraint.add(bNewElse);
         }
         // JFormDesigner - End of component initialization  //GEN-END:initComponents  @formatter:on
     }
@@ -194,6 +227,7 @@ public class StonecutterEditorPopup extends JPanel {
     private JTextField tSyntax;
     private JPanel pNewConstraint;
     private JButton bNewConstraint;
+    private JButton bNewElse;
     // JFormDesigner - End of variables declaration  //GEN-END:variables  @formatter:on
     private final JComponent firstFocus;
 }
