@@ -9,7 +9,10 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -43,8 +46,11 @@ public abstract class StonecutterTask extends DefaultTask {
             StoneRegexTokenizer sourceTokenizer = getFromVersion().get().tokenizer();
             StoneRegexTokenizer targetTokenizer = getToVersion().get().tokenizer();
 
-            if (!targetTokenizer.tokens().containsAll(sourceTokenizer.tokens()))
-                throw new IllegalStateException("Target token set not complete");
+            if (!targetTokenizer.tokens().containsAll(sourceTokenizer.tokens())) {
+                Set<String> missing = new HashSet<>(sourceTokenizer.tokens());
+                missing.removeAll(targetTokenizer.tokens());
+                throw new IllegalStateException("Target token set not complete! Missing mapping for: [" + String.join(", ", missing) + "]");
+            }
 
             this.remapTokenizer = StoneRegexTokenizer.remap(sourceTokenizer, targetTokenizer);
         } catch (Exception e) {
