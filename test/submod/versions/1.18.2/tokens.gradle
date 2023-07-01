@@ -1,1 +1,5 @@
-token 'test', ~/\{(?<val>.+)\}\/\/monka/, '{${val}}//monka'
+token ('test_token') {
+    read ~/was (?<word>\S+) 1\.18\.2/
+    write 'was ${word} 1.18.2'
+    defaultEnabled true
+}

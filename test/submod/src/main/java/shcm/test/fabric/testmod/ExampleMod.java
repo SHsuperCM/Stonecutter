@@ -43,4 +43,23 @@ public class ExampleMod implements ModInitializer {
 		item = net.minecraft.util.registry.Registry.ITEM.get(new Identifier("minecraft:flint"));
 		/*?}?*/
 	}
+
+
+	{
+		/*?$token disable test_token?*/
+		System.out.println("the test was for 1.19.2");
+		System.out.println("the test was for 1.19.2"); // this was the 1.19.2 thing?
+		/*?$token enable test_token?*/
+		System.out.println("the test is the 1.20.1");
+		System.out.println("the test is for 1.20.1");
+		System.out.println("This is for 1.20.1");
+		System.out.println("the test is for 1.20.1");
+		System.out.println("the test was lmaoXDKEKW  1.19.2");
+		/*?$token disable test_token?*/
+		System.out.println("the test was for 1.19.2");
+
+		/*
+		This was for 1.19.2
+		 */
+	}
 }
