@@ -16,12 +16,10 @@ import io.shcm.shsupercm.fabric.stonecutter.idea.StonecutterService;
 import io.shcm.shsupercm.fabric.stonecutter.idea.StonecutterSetup;
 
 import javax.swing.*;
-import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
 
-public class StonecutterEditorPopup extends JPanel {
+public class StonecutterEditorPopup {
     private static final ActiveIcon ICON = new ActiveIcon(StonecutterService.ICON);
 
     private final Project project;
@@ -31,10 +29,17 @@ public class StonecutterEditorPopup extends JPanel {
 
     private TextRange mainSyntaxRange = null;
 
+    public JPanel root;
+    public JButton bVersions;
+    public JButton bTokens;
+
     public static ComponentPopupBuilder builder(Project project, Editor editor, VirtualFile file) {
-        StonecutterEditorPopup popup = new StonecutterEditorPopup(project, editor, file);
+        return builder(new StonecutterEditorPopup(project, editor, file));
+    }
+
+    private static ComponentPopupBuilder builder(StonecutterEditorPopup popup) {
         return JBPopupFactory.getInstance()
-                .createComponentPopupBuilder(popup, popup.firstFocus)
+                .createComponentPopupBuilder(popup.root, null)
                 .setCancelOnClickOutside(true)
                 .setCancelOnOtherWindowOpen(true)
                 .setCancelOnWindowDeactivation(true)
@@ -44,15 +49,16 @@ public class StonecutterEditorPopup extends JPanel {
     }
 
     private StonecutterEditorPopup(Project project, Editor editor, VirtualFile file) {
-        super(new GridBagLayout());
         this.project = project;
         this.editor = editor;
         this.file = file;
         this.stonecutter = project.getService(StonecutterService.class).fromVersionedFile(file);
 
-        initComponents();
 
-        bVersion.setText(stonecutter.currentActive());
+        bVersions.addActionListener(this::clickVersions);
+        bTokens.addActionListener(this::clickTokens);
+
+        bVersions.setText(stonecutter.currentActive());
 
         for (FoldRegion foldRegion : editor.getFoldingModel().getAllFoldRegions()) {
             if (foldRegion.getStartOffset() == editor.getCaretModel().getOffset()) {
@@ -66,9 +72,98 @@ public class StonecutterEditorPopup extends JPanel {
         }
 
         if (this.mainSyntaxRange != null) {
+            root.add(new EditSyntax().tabRoot, BorderLayout.CENTER);
+        } else if (editor.getSelectionModel().hasSelection()) {
+            root.add(new NewConstraint().tabRoot, BorderLayout.CENTER);
+        }
+    }
+
+    private void clickVersions(ActionEvent e) {
+        JBPopupFactory.getInstance()
+                .createPopupChooserBuilder(Lists.newArrayList(stonecutter.versions()))
+                .setTitle("Switch Stonecutter Active Version")
+                .setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
+                .setItemChosenCallback(version -> project.getService(StonecutterService.class).switchActive(version))
+                .createPopup().showInBestPositionFor(editor);
+    }
+
+    private void clickTokens(ActionEvent e) {
+        editor.getSelectionModel().removeSelection();
+        root.remove(((BorderLayout) root.getLayout()).getLayoutComponent(BorderLayout.CENTER));
+        root.add(new Tokens().tabRoot, BorderLayout.CENTER);
+    }
+
+    public class NewConstraint {
+        public JPanel tabRoot;
+        public JButton bNewConstraint;
+        public JButton bNewElse;
+
+        public NewConstraint() {
+            bNewConstraint.addActionListener(this::clickNewConstraint);
+
+            int start = editor.getSelectionModel().getSelectionStart();
+            bNewElse.setEnabled(start > 4 && editor.getDocument().getText(TextRange.create(start - 4, start)).equals("}?*/"));
+            if (bNewElse.isEnabled())
+                bNewElse.addActionListener(this::clickNewElse);
+        }
+
+        private void clickNewConstraint(ActionEvent e) {
+            StackingPopupDispatcher.getInstance().closeActivePopup();
+            String selectionText = editor.getSelectionModel().getSelectedText();
+            if (selectionText == null)
+                return;
+            WriteCommandAction.runWriteCommandAction(project, null, null, () -> {
+                int selectionStart = editor.getSelectionModel().getSelectionStart(),
+                        selectionEnd = editor.getSelectionModel().getSelectionEnd(),
+                        startLine = editor.getDocument().getLineNumber(selectionStart), startLineStartOffset = editor.getDocument().getLineStartOffset(startLine), startLineEndOffset = editor.getDocument().getLineEndOffset(startLine),
+                        endLine = editor.getDocument().getLineNumber(selectionEnd), endLineStartOffset = editor.getDocument().getLineStartOffset(endLine), endLineEndOffset = editor.getDocument().getLineEndOffset(endLine);
+                editor.getSelectionModel().removeSelection();
+                if (editor.getDocument().getText(TextRange.create(selectionEnd, endLineEndOffset)).isBlank()) {
+                    String newLine = "\n" + CodeStyleManager.getInstance(project).getLineIndent(editor.getDocument(), endLineEndOffset);
+                    editor.getDocument().insertString(selectionEnd, newLine);
+                    selectionEnd += newLine.length();
+                }
+                editor.getDocument().insertString(selectionEnd, "/*?}?*/");
+                if (editor.getDocument().getText(TextRange.create(startLineStartOffset, selectionStart)).isBlank()) {
+                    String newLine = CodeStyleManager.getInstance(project).getLineIndent(editor.getDocument(), startLineStartOffset) + "\n";
+                    editor.getDocument().insertString(startLineStartOffset, newLine);
+                    selectionStart = startLineStartOffset + newLine.length() - 1;
+                }
+                editor.getDocument().insertString(selectionStart, "/*?" + stonecutter.currentActive() + " {?*/");
+                editor.getCaretModel().moveToOffset(selectionStart + 1);
+            });
+        }
+
+        private void clickNewElse(ActionEvent e) {
+            StackingPopupDispatcher.getInstance().closeActivePopup();
+            String selectionText = editor.getSelectionModel().getSelectedText();
+            if (selectionText == null)
+                return;
+            WriteCommandAction.runWriteCommandAction(project, null, null, () -> {
+                int selectionStart = editor.getSelectionModel().getSelectionStart(),
+                        selectionEnd = editor.getSelectionModel().getSelectionEnd(),
+                        endLine = editor.getDocument().getLineNumber(selectionEnd), endLineStartOffset = editor.getDocument().getLineStartOffset(endLine), endLineEndOffset = editor.getDocument().getLineEndOffset(endLine);
+                editor.getSelectionModel().removeSelection();
+                if (editor.getDocument().getText(TextRange.create(selectionEnd, endLineEndOffset)).isBlank()) {
+                    String newLine = "\n" + CodeStyleManager.getInstance(project).getLineIndent(editor.getDocument(), endLineEndOffset);
+                    editor.getDocument().insertString(selectionEnd, newLine);
+                    selectionEnd += newLine.length();
+                }
+                editor.getDocument().insertString(selectionEnd, "/*?}?*/");
+                editor.getDocument().insertString(selectionStart - 3, " else {");
+                editor.getCaretModel().moveToOffset(selectionStart - 6);
+            });
+        }
+    }
+
+    public class EditSyntax {
+        public JPanel tabRoot;
+        public JTextField tSyntax;
+
+        public EditSyntax() {
             editor.getSelectionModel().removeSelection();
-            add(pEditSyntax, BorderLayout.CENTER);
-            String syntax = editor.getDocument().getText(this.mainSyntaxRange);
+
+            String syntax = editor.getDocument().getText(mainSyntaxRange);
             syntax = syntax.substring(3, syntax.length() - 3).trim();
             tSyntax.setText(syntax);
             tSyntax.addActionListener(e -> {
@@ -79,155 +174,14 @@ public class StonecutterEditorPopup extends JPanel {
                 });
                 StackingPopupDispatcher.getInstance().closeActivePopup();
             });
-
-            tSyntax.requestFocusInWindow(FocusEvent.Cause.ACTIVATION);
-            firstFocus = tSyntax;
-        } else if (editor.getSelectionModel().hasSelection()) {
-            add(pNewConstraint, BorderLayout.CENTER);
-            bNewConstraint.requestFocusInWindow(FocusEvent.Cause.ACTIVATION);
-            firstFocus = bNewConstraint;
-
-            int start = editor.getSelectionModel().getSelectionStart();
-            bNewElse.setEnabled(start > 4 && editor.getDocument().getText(TextRange.create(start - 4, start)).equals("}?*/"));
-        } else {
-            firstFocus = bVersion;
         }
     }
 
-    private void clickVersion(ActionEvent e) {
-        JBPopupFactory.getInstance()
-                .createPopupChooserBuilder(Lists.newArrayList(stonecutter.versions()))
-                .setTitle("Switch Stonecutter Active Version")
-                .setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
-                .setItemChosenCallback(version -> project.getService(StonecutterService.class).switchActive(version))
-                .createPopup().showInBestPositionFor(editor);
-    }
+    public class Tokens {
+        public JPanel tabRoot;
 
-    private void clickNewConstraint(ActionEvent e) {
-        StackingPopupDispatcher.getInstance().closeActivePopup();
-        String selectionText = editor.getSelectionModel().getSelectedText();
-        if (selectionText == null)
-            return;
-        WriteCommandAction.runWriteCommandAction(project, null, null, () -> {
-            int selectionStart = editor.getSelectionModel().getSelectionStart(),
-                selectionEnd = editor.getSelectionModel().getSelectionEnd(),
-                startLine = editor.getDocument().getLineNumber(selectionStart), startLineStartOffset = editor.getDocument().getLineStartOffset(startLine), startLineEndOffset = editor.getDocument().getLineEndOffset(startLine),
-                endLine = editor.getDocument().getLineNumber(selectionEnd), endLineStartOffset = editor.getDocument().getLineStartOffset(endLine), endLineEndOffset = editor.getDocument().getLineEndOffset(endLine);
-            editor.getSelectionModel().removeSelection();
-
-            if (editor.getDocument().getText(TextRange.create(selectionEnd, endLineEndOffset)).isBlank()) {
-                String newLine = "\n" + CodeStyleManager.getInstance(project).getLineIndent(editor.getDocument(), endLineEndOffset);
-                editor.getDocument().insertString(selectionEnd, newLine);
-                selectionEnd += newLine.length();
-            }
-
-            editor.getDocument().insertString(selectionEnd, "/*?}?*/");
-
-            if (editor.getDocument().getText(TextRange.create(startLineStartOffset, selectionStart)).isBlank()) {
-                String newLine = CodeStyleManager.getInstance(project).getLineIndent(editor.getDocument(), startLineStartOffset) + "\n";
-                editor.getDocument().insertString(startLineStartOffset, newLine);
-                selectionStart = startLineStartOffset + newLine.length() - 1;
-            }
-
-            editor.getDocument().insertString(selectionStart, "/*?" + stonecutter.currentActive() + " {?*/");
-            editor.getCaretModel().moveToOffset(selectionStart + 1);
-        });
-    }
-
-    private void clickNewElse(ActionEvent e) {
-        StackingPopupDispatcher.getInstance().closeActivePopup();
-        String selectionText = editor.getSelectionModel().getSelectedText();
-        if (selectionText == null)
-            return;
-        WriteCommandAction.runWriteCommandAction(project, null, null, () -> {
-            int selectionStart = editor.getSelectionModel().getSelectionStart(),
-                selectionEnd = editor.getSelectionModel().getSelectionEnd(),
-                endLine = editor.getDocument().getLineNumber(selectionEnd), endLineStartOffset = editor.getDocument().getLineStartOffset(endLine), endLineEndOffset = editor.getDocument().getLineEndOffset(endLine);
-            editor.getSelectionModel().removeSelection();
-
-            if (editor.getDocument().getText(TextRange.create(selectionEnd, endLineEndOffset)).isBlank()) {
-                String newLine = "\n" + CodeStyleManager.getInstance(project).getLineIndent(editor.getDocument(), endLineEndOffset);
-                editor.getDocument().insertString(selectionEnd, newLine);
-                selectionEnd += newLine.length();
-            }
-
-            editor.getDocument().insertString(selectionEnd, "/*?}?*/");
-
-            editor.getDocument().insertString(selectionStart - 3, " else {");
-            editor.getCaretModel().moveToOffset(selectionStart - 6);
-        });
-    }
-
-    private void initComponents() {
-        // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
-        pTopButtons = new JPanel();
-        bVersion = new JButton();
-        pEditSyntax = new JPanel();
-        var label1 = new JLabel();
-        tSyntax = new JTextField();
-        pNewConstraint = new JPanel();
-        bNewConstraint = new JButton();
-        bNewElse = new JButton();
-
-        //======== this ========
-        setLayout(new BorderLayout(5, 5));
-
-        //======== pTopButtons ========
-        {
-            pTopButtons.setBorder(new EtchedBorder());
-            pTopButtons.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-            //---- bVersion ----
-            bVersion.setText("version");
-            bVersion.setPreferredSize(new Dimension(80, 25));
-            bVersion.addActionListener(e -> clickVersion(e));
-            pTopButtons.add(bVersion);
+        public Tokens() {
+            bTokens.setEnabled(false);
         }
-        add(pTopButtons, BorderLayout.NORTH);
-
-        //======== pEditSyntax ========
-        {
-            pEditSyntax.setBorder(new EtchedBorder());
-            pEditSyntax.setPreferredSize(new Dimension(300, 55));
-            pEditSyntax.setLayout(new BorderLayout(5, 5));
-
-            //---- label1 ----
-            label1.setText("Version constraint:");
-            pEditSyntax.add(label1, BorderLayout.NORTH);
-
-            //---- tSyntax ----
-            tSyntax.setPreferredSize(new Dimension(80, 16));
-            tSyntax.setText("syntax");
-            pEditSyntax.add(tSyntax, BorderLayout.CENTER);
-        }
-
-        //======== pNewConstraint ========
-        {
-            pNewConstraint.setBorder(new EtchedBorder());
-            pNewConstraint.setPreferredSize(new Dimension(300, 45));
-            pNewConstraint.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-            //---- bNewConstraint ----
-            bNewConstraint.setText("New Constraint");
-            bNewConstraint.addActionListener(e -> clickNewConstraint(e));
-            pNewConstraint.add(bNewConstraint);
-
-            //---- bNewElse ----
-            bNewElse.setText("New Else");
-            bNewElse.addActionListener(e -> clickNewElse(e));
-            pNewConstraint.add(bNewElse);
-        }
-        // JFormDesigner - End of component initialization  //GEN-END:initComponents  @formatter:on
     }
-
-    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables  @formatter:off
-    private JPanel pTopButtons;
-    private JButton bVersion;
-    private JPanel pEditSyntax;
-    private JTextField tSyntax;
-    private JPanel pNewConstraint;
-    private JButton bNewConstraint;
-    private JButton bNewElse;
-    // JFormDesigner - End of variables declaration  //GEN-END:variables  @formatter:on
-    private final JComponent firstFocus;
 }
