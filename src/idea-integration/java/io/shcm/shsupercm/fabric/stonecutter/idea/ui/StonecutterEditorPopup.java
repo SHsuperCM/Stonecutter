@@ -18,6 +18,8 @@ import io.shcm.shsupercm.fabric.stonecutter.idea.StonecutterSetup;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class StonecutterEditorPopup {
     private static final ActiveIcon ICON = new ActiveIcon(StonecutterService.ICON);
@@ -39,7 +41,7 @@ public class StonecutterEditorPopup {
 
     private static ComponentPopupBuilder builder(StonecutterEditorPopup popup) {
         return JBPopupFactory.getInstance()
-                .createComponentPopupBuilder(popup.root, null)
+                .createComponentPopupBuilder(popup.root, popup.root)
                 .setCancelOnClickOutside(true)
                 .setCancelOnOtherWindowOpen(true)
                 .setCancelOnWindowDeactivation(true)
@@ -54,6 +56,31 @@ public class StonecutterEditorPopup {
         this.file = file;
         this.stonecutter = project.getService(StonecutterService.class).fromVersionedFile(file);
 
+        SwingUtilities.invokeLater(() -> bVersions.requestFocusInWindow());
+
+        for (Component component : new Component[] { bVersions, bTokens }) {
+            component.setFocusTraversalKeysEnabled(false);
+            component.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                        if (bVersions.isFocusOwner())
+                            bTokens.requestFocusInWindow();
+                        else if (bTokens.isFocusOwner())
+                            bVersions.requestFocusInWindow();
+                        e.consume();
+                    } else if (e.getKeyCode() == KeyEvent.VK_TAB) {
+                        if (bVersions.isFocusOwner() || bTokens.isFocusOwner()) {
+                            Component centerComponent = ((BorderLayout) root.getLayout()).getLayoutComponent(BorderLayout.CENTER);
+                            if (centerComponent != null)
+                                (centerComponent instanceof JPanel && ((JPanel) centerComponent).getComponents().length > 0 ? ((JPanel) centerComponent).getComponent(0) : centerComponent).requestFocusInWindow();
+
+                            e.consume();
+                        }
+                    }
+                }
+            });
+        }
 
         bVersions.addActionListener(this::clickVersions);
         bTokens.addActionListener(this::clickTokens);
@@ -89,7 +116,11 @@ public class StonecutterEditorPopup {
 
     private void clickTokens(ActionEvent e) {
         editor.getSelectionModel().removeSelection();
-        root.remove(((BorderLayout) root.getLayout()).getLayoutComponent(BorderLayout.CENTER));
+
+        Component centerComponent = ((BorderLayout) root.getLayout()).getLayoutComponent(BorderLayout.CENTER);
+        if (centerComponent != null)
+            root.remove(centerComponent);
+
         root.add(new Tokens().tabRoot, BorderLayout.CENTER);
     }
 
@@ -105,6 +136,29 @@ public class StonecutterEditorPopup {
             bNewElse.setEnabled(start > 4 && editor.getDocument().getText(TextRange.create(start - 4, start)).equals("}?*/"));
             if (bNewElse.isEnabled())
                 bNewElse.addActionListener(this::clickNewElse);
+
+            SwingUtilities.invokeLater(() -> bNewConstraint.requestFocusInWindow());
+
+            for (Component component : tabRoot.getComponents()) {
+                component.setFocusTraversalKeysEnabled(false);
+                component.addKeyListener(new KeyAdapter() {
+                    @Override
+                    public void keyPressed(KeyEvent e) {
+                        if (e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                            if (bNewConstraint.isFocusOwner() && bNewElse.isEnabled())
+                                bNewElse.requestFocusInWindow();
+                            else if (bNewElse.isFocusOwner())
+                                bNewConstraint.requestFocusInWindow();
+                            e.consume();
+                        } else if (e.getKeyCode() == KeyEvent.VK_TAB) {
+                            if (bNewConstraint.isFocusOwner() || bNewElse.isFocusOwner()) {
+                                bVersions.requestFocusInWindow();
+                                e.consume();
+                            }
+                        }
+                    }
+                });
+            }
         }
 
         private void clickNewConstraint(ActionEvent e) {
@@ -173,6 +227,21 @@ public class StonecutterEditorPopup {
                     editor.getDocument().replaceString(mainSyntaxRange.getStartOffset(), mainSyntaxRange.getEndOffset(), newSyntax);
                 });
                 StackingPopupDispatcher.getInstance().closeActivePopup();
+            });
+
+            SwingUtilities.invokeLater(() -> tSyntax.requestFocusInWindow());
+
+            tSyntax.setFocusTraversalKeysEnabled(false);
+            tSyntax.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.getKeyCode() == KeyEvent.VK_TAB) {
+                        if (tSyntax.hasFocus())
+                            bVersions.requestFocusInWindow();
+
+                        e.consume();
+                    }
+                }
             });
         }
     }
