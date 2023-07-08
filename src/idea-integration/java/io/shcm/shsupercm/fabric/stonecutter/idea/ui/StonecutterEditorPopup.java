@@ -17,6 +17,7 @@ import io.shcm.shsupercm.fabric.stonecutter.idea.StonecutterService;
 import io.shcm.shsupercm.fabric.stonecutter.idea.StonecutterSetup;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -287,8 +288,8 @@ public class StonecutterEditorPopup {
             refreshTable();
         }
 
-        public void itemSelected(Object e) {
-            bCreateFlag.setEnabled(bCreateFlag.isEnabled());
+        public void itemSelected(ListSelectionEvent e) {
+            bCreateFlag.setEnabled(tTokens.getSelectedRow() != -1);
         }
 
         @Override
