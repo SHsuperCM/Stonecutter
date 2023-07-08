@@ -12,14 +12,18 @@ import com.intellij.openapi.ui.popup.StackingPopupDispatcher;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.codeStyle.CodeStyleManager;
+import com.intellij.ui.CollectionComboBoxModel;
 import io.shcm.shsupercm.fabric.stonecutter.idea.StonecutterService;
 import io.shcm.shsupercm.fabric.stonecutter.idea.StonecutterSetup;
 
 import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StonecutterEditorPopup {
     private static final ActiveIcon ICON = new ActiveIcon(StonecutterService.ICON);
@@ -116,12 +120,11 @@ public class StonecutterEditorPopup {
 
     private void clickTokens(ActionEvent e) {
         editor.getSelectionModel().removeSelection();
+        StackingPopupDispatcher.getInstance().closeActivePopup();
 
-        Component centerComponent = ((BorderLayout) root.getLayout()).getLayoutComponent(BorderLayout.CENTER);
-        if (centerComponent != null)
-            root.remove(centerComponent);
-
-        root.add(new Tokens().tabRoot, BorderLayout.CENTER);
+        StonecutterEditorPopup popup = new StonecutterEditorPopup(project, editor, file);
+        popup.root.add(popup.new Tokens().tabRoot, BorderLayout.CENTER);
+        builder(popup).setMinSize(new Dimension(300, 200)).setResizable(true).createPopup().showInBestPositionFor(editor);
     }
 
     public class NewConstraint {
@@ -246,11 +249,77 @@ public class StonecutterEditorPopup {
         }
     }
 
-    public class Tokens {
+    public class Tokens extends AbstractTableModel {
         public JPanel tabRoot;
+        public JBTable tTokens;
+        public JComboBox<String> cVersion;
+        public JButton bNewToken;
+        public JButton bCreateFlag;
+
+        public List<StonecutterSetup.TokenMapper.Token> loadedTokens;
 
         public Tokens() {
             bTokens.setEnabled(false);
+
+            tTokens.setModel(this);
+            tTokens.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+            CollectionComboBoxModel<String> versionModel = new CollectionComboBoxModel<>();
+            for (String version : stonecutter.versions())
+                versionModel.add(version);
+            versionModel.setSelectedItem(stonecutter.currentActive());
+            cVersion.setModel(versionModel);
+            cVersion.addActionListener(this::versionChanged);
+
+            tTokens.getSelectionModel().addListSelectionListener(this::itemSelected);
+
+            refreshTable();
+        }
+
+        private void refreshTable() {
+            //noinspection SuspiciousMethodCalls
+            loadedTokens = new ArrayList<>(stonecutter.tokenCache().tokensByVersion.get(cVersion.getSelectedItem()).values());
+            tTokens.revalidate();
+            tTokens.repaint();
+        }
+
+        private void versionChanged(ActionEvent actionEvent) {
+            refreshTable();
+        }
+
+        public void itemSelected(Object e) {
+            bCreateFlag.setEnabled(bCreateFlag.isEnabled());
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return new String[] {
+                    "Identifier", "Reader", "Writer"
+            }[column];
+        }
+
+        @Override
+        public int getRowCount() {
+            return loadedTokens.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return 3;
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            StonecutterSetup.TokenMapper.Token token = loadedTokens.get(rowIndex);
+            switch (columnIndex) {
+                case 0:
+                    return token.id;
+                case 1:
+                    return token.read.pattern();
+                case 2:
+                    return token.write;
+            }
+            return "";
         }
     }
 }
