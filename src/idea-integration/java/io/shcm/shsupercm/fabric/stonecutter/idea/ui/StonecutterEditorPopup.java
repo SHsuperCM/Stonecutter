@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.FoldRegion;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.ActiveIcon;
 import com.intellij.openapi.ui.popup.ComponentPopupBuilder;
@@ -11,20 +12,20 @@ import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.StackingPopupDispatcher;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.ui.CollectionComboBoxModel;
 import io.shcm.shsupercm.fabric.stonecutter.idea.StonecutterService;
 import io.shcm.shsupercm.fabric.stonecutter.idea.StonecutterSetup;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class StonecutterEditorPopup {
     private static final ActiveIcon ICON = new ActiveIcon(StonecutterService.ICON);
@@ -264,6 +265,24 @@ public class StonecutterEditorPopup {
 
             tTokens.setModel(this);
             tTokens.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            tTokens.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    int row = tTokens.rowAtPoint(e.getPoint());
+                    if (e.getClickCount() == 2 && row != -1) {
+                        try {
+                            //noinspection SuspiciousMethodCalls
+                            File tokensFile = new File(stonecutter.gradleProject().getChildProjects().get(cVersion.getSelectedItem()).getProjectDir(), "tokens.gradle");
+                            if (!tokensFile.exists())
+                                throw new Exception();
+
+                            FileEditorManager.getInstance(project).openFile(Objects.requireNonNull(VirtualFileManager.getInstance().findFileByNioPath(tokensFile.toPath())), true);
+                            Editor newEditor = Objects.requireNonNull(FileEditorManager.getInstance(project).getSelectedTextEditor());
+                            newEditor.getCaretModel().moveToOffset(newEditor.getDocument().getText().indexOf((String) tTokens.getModel().getValueAt(row, 0)));
+                        } catch (Exception ignored) { }
+                    }
+                }
+            });
 
             CollectionComboBoxModel<String> versionModel = new CollectionComboBoxModel<>();
             for (String version : stonecutter.versions())
@@ -272,7 +291,7 @@ public class StonecutterEditorPopup {
             cVersion.setModel(versionModel);
             cVersion.addActionListener(this::versionChanged);
 
-            tTokens.getSelectionModel().addListSelectionListener(this::itemSelected);
+            tTokens.getSelectionModel().addListSelectionListener(e -> bCreateFlag.setEnabled(tTokens.getSelectedRow() != -1));
 
             bCreateFlag.addActionListener(this::clickCreateFlag);
             bNewToken.addActionListener(this::clickNewToken);
@@ -314,8 +333,9 @@ public class StonecutterEditorPopup {
             refreshTable();
         }
 
-        public void itemSelected(ListSelectionEvent e) {
-            bCreateFlag.setEnabled(tTokens.getSelectedRow() != -1);
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return false;
         }
 
         @Override
