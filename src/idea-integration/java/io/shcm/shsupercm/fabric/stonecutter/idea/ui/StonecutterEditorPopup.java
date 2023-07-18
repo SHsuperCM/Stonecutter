@@ -274,7 +274,33 @@ public class StonecutterEditorPopup {
 
             tTokens.getSelectionModel().addListSelectionListener(this::itemSelected);
 
+            bCreateFlag.addActionListener(this::clickCreateFlag);
+            bNewToken.addActionListener(this::clickNewToken);
+
             refreshTable();
+        }
+
+        private void clickCreateFlag(ActionEvent actionEvent) {
+            int tokenRow = tTokens.getSelectedRow();
+            if (tokenRow == -1)
+                return;
+
+            String token = (String) tTokens.getModel().getValueAt(tokenRow, 0);
+
+            JBPopupFactory.getInstance()
+                    .createPopupChooserBuilder(List.of("/*?$token enable " + token + "?*/", "/*?$token disable " + token + "?*/"))
+                    .setTitle("Create Flag for Token: " + token)
+                    .setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
+                    .setItemChosenCallback(flag -> {
+                        WriteCommandAction.runWriteCommandAction(project, null, null, () -> {
+                            editor.getDocument().replaceString(editor.getSelectionModel().getSelectionStart(), editor.getSelectionModel().getSelectionEnd(), flag);
+                        });
+                    })
+                    .createPopup().showInBestPositionFor(editor);
+        }
+
+        private void clickNewToken(ActionEvent actionEvent) {
+
         }
 
         private void refreshTable() {
