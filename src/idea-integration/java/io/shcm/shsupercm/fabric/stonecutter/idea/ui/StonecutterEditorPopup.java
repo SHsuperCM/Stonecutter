@@ -52,6 +52,7 @@ public class StonecutterEditorPopup {
                 .setCancelOnOtherWindowOpen(true)
                 .setCancelOnWindowDeactivation(true)
                 .setRequestFocus(true)
+                .setDimensionServiceKey(popup.project, StonecutterEditorPopup.class.getName(), false)
                 .setTitle("Stonecutter")
                 .setTitleIcon(ICON);
     }
@@ -319,7 +320,11 @@ public class StonecutterEditorPopup {
         }
 
         private void clickNewToken(ActionEvent actionEvent) {
+            StackingPopupDispatcher.getInstance().closeActivePopup();
 
+            NewTokenDialog dialog = new NewTokenDialog(project, editor, stonecutter);
+            if (dialog.showAndGet())
+                WriteCommandAction.runWriteCommandAction(project, null, null, dialog::execute);
         }
 
         private void refreshTable() {

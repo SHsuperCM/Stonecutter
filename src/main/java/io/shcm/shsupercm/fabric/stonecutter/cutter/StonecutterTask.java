@@ -49,6 +49,7 @@ public abstract class StonecutterTask extends DefaultTask {
             if (!targetTokenizer.tokens().containsAll(sourceTokenizer.tokens())) {
                 Set<String> missing = new HashSet<>(sourceTokenizer.tokens());
                 missing.removeAll(targetTokenizer.tokens());
+                //todo replace with warning
                 throw new IllegalStateException("Target token set not complete! Missing mapping for: [" + String.join(", ", missing) + "]");
             }
 
