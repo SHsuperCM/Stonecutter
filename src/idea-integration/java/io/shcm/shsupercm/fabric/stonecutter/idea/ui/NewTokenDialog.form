@@ -25,11 +25,9 @@
                   <text value="Identifier:"/>
                 </properties>
               </component>
-              <component id="53682" class="io.shcm.shsupercm.fabric.stonecutter.idea.ui.LanguageTextField" binding="tIdentifier" custom-create="true">
+              <component id="47fe" class="com.intellij.ui.LanguageTextField" binding="tIdentifier" custom-create="true">
                 <constraints border-constraint="Center"/>
-                <properties>
-                  <preferredSize width="150" height="30"/>
-                </properties>
+                <properties/>
               </component>
             </children>
           </grid>
@@ -64,7 +62,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="23df4" class="io.shcm.shsupercm.fabric.stonecutter.idea.ui.LanguageTextField" binding="tReader" custom-create="true">
+              <component id="c9eb5" class="com.intellij.ui.LanguageTextField" binding="tReader" custom-create="true">
                 <constraints border-constraint="Center"/>
                 <properties/>
               </component>
@@ -81,7 +79,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="c50b7" class="io.shcm.shsupercm.fabric.stonecutter.idea.ui.LanguageTextField" binding="tWriter" custom-create="true">
+              <component id="3739a" class="com.intellij.ui.LanguageTextField" binding="tWriter" custom-create="true">
                 <constraints border-constraint="Center"/>
                 <properties/>
               </component>

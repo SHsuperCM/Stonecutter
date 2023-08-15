@@ -15,6 +15,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.ui.CollectionComboBoxModel;
+import com.intellij.ui.table.JBTable;
 import io.shcm.shsupercm.fabric.stonecutter.idea.StonecutterService;
 import io.shcm.shsupercm.fabric.stonecutter.idea.StonecutterSetup;
 
