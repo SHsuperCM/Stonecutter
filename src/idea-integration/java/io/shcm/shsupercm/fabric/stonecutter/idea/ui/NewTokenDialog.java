@@ -12,6 +12,10 @@ import io.shcm.shsupercm.fabric.stonecutter.idea.StonecutterSetup;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.regex.Pattern;
@@ -107,7 +111,18 @@ public class NewTokenDialog extends DialogWrapper {
     }
 
     public void execute() {
-
+        try {
+            Files.writeString(new File(stonecutter.gradleProject().getChildProjects().get(stonecutter.currentActive()).getProjectDir(), "tokens.gradle").toPath(), new StringBuilder()
+                    .append('\n')
+                    .append("token ('").append(tIdentifier.getText()).append("') {\n")
+                    .append("    read ~/").append(tReader.getText().replace("/", "\\/")).append("/\n")
+                    .append("    write '").append(tWriter.getText().replace("'", "\\'")).append("'\n")
+                    .append("    defaultEnabled ").append(cEnableByDefault.isSelected()).append('\n')
+                    .append("}\n")
+                    , StandardCharsets.ISO_8859_1, StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 
