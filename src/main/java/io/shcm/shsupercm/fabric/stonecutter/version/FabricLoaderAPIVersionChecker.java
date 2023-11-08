@@ -4,14 +4,10 @@ import java.lang.reflect.Method;
 import java.util.function.Predicate;
 
 public class FabricLoaderAPIVersionChecker implements StonecutterVersionChecker {
-    private final ClassLoader classLoader;
-    private final Class<?> classSemanticVersion;
     private final Method methodSemanticVersionParse, methodVersionPredicateParse;
 
     public FabricLoaderAPIVersionChecker(ClassLoader classLoader) throws ClassNotFoundException, NoSuchMethodException {
-        this.classLoader = classLoader;
-
-        this.classSemanticVersion = classLoader.loadClass("net.fabricmc.loader.api.SemanticVersion");
+        Class<?> classSemanticVersion = classLoader.loadClass("net.fabricmc.loader.api.SemanticVersion");
         this.methodSemanticVersionParse = classSemanticVersion.getDeclaredMethod("parse", String.class);
         this.methodVersionPredicateParse = classLoader.loadClass("net.fabricmc.loader.api.metadata.version.VersionPredicate").getDeclaredMethod("parse", String.class);
     }

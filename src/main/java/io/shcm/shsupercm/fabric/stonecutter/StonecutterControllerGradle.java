@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StonecutterControllerGradle {
-    public final Class<ChiseledTask> chiseled = ChiseledTask.class;
     private final StonecutterProjectSetups.Setup setup;
 
     public StonecutterControllerGradle(Project project) {

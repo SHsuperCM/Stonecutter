@@ -103,7 +103,7 @@ public class StonecutterSettingsGradle {
         }
 
         public void versions(String... versions) {
-            if (versions.length == 0 || versions.length != Set.of(versions).size())
+            if (versions.length == 0)
                 throw new IllegalArgumentException("Invalid list of versions");
 
             this.versions = versions;
