@@ -9,7 +9,7 @@ repositories {
 }
 
 intellij {
-    version = '2021.1.2'
+    version = '2023.2.4'
     plugins = [ 'com.intellij.java', 'org.jetbrains.plugins.gradle' ]
 }
 
