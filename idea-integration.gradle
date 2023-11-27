@@ -9,14 +9,17 @@ repositories {
 }
 
 intellij {
-    version = '2021.1.2'
+    version = '2023.2.5'
     plugins = [ 'com.intellij.java', 'org.jetbrains.plugins.gradle' ]
+}
+
+patchPluginXml {
+    sinceBuild = "211"
 }
 
 dependencies {
     compileOnly zipTree(project.configurations.detachedConfiguration(dependencies.create("com.jetbrains.intellij.idea:ideaIC:${intellij.version.get()}")).singleFile).matching {
-        include "lib/platform-api.jar"
-        include "lib/platform-impl.jar"
+        include "lib/app-client.jar"
     }
 }
 configurations.formsClasspath.extendsFrom(configurations.compileOnly)
