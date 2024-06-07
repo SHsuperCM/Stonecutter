@@ -1,6 +1,13 @@
 # Stonecutter
 Preprocessor/JCP inspired multi-version environment manager
 
+# Notice (READ BEFORE USING)
+This project was made mainly for my own use within my projects. While stonecutter is not technically "archived", you should not expect much support if you plan on using it.
+
+Instead, consider using [KikuGie's fork](https://github.com/kikugie/stonecutter-kt) which greatly expands upon the concept with documentation and additional features.<br>
+Here's a link to get you started: https://stonecutter.kikugie.dev/stonecutter/introduction
+
+
 ## About
 This gradle/intellij plugin is a manager that allows working on a project that targets multiple compatabile release versions of a dependency. This is mostly meant for Loom-based Fabric projects written in java.
 
